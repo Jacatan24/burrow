@@ -129,7 +129,7 @@ h3 { font-size: .78rem; font-weight: 800; text-transform: uppercase; letter-spac
 }
 .clock-row { display: grid; justify-items: center; gap: 4px; padding: 16px 16px 4px; }
 .time { font-family: var(--font-display); font-weight: 800; font-size: clamp(3.6rem, 16vw, 5rem); line-height: 1; display: flex; }
-.time span { display: inline-block; width: .62em; text-align: center; }
+.time span { display: inline-block; width: var(--digit-w, .62em); text-align: center; }
 .time span.colon { width: .3em; }
 .status { color: var(--muted); font-weight: 700; font-size: .95rem; text-align: center; }
 .bar { width: min(320px, 100%); height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; margin-top: 8px; }
@@ -442,7 +442,7 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
 .c-bl { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); }
 .c-br { bottom: calc(10px + env(safe-area-inset-bottom, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); }
 .corner-link { border: 0; background: transparent; font-family: var(--font-hand); font-size: 1.3rem; padding: 6px 4px; letter-spacing: .02em; }
-.corner-link:hover { text-decoration: underline wavy; text-underline-offset: 5px; }
+.corner-link:hover { opacity: .7; }
 .seeds { border: 0; background: transparent; display: flex; align-items: center; gap: 4px; font-weight: 800; font-size: .85rem; padding: 0 4px; font-variant-numeric: tabular-nums; }
 .seeds svg { width: 9px; height: 13px; fill: var(--paper-ink); }
 
@@ -451,7 +451,7 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
 .hud > * { pointer-events: auto; }
 .home .modes { display: flex; gap: 2px; padding: 0; background: none; flex-wrap: wrap; justify-content: center; }
 .home .modes button { flex: none; background: none; border: 0; font-family: var(--font-hand); font-weight: 400; font-size: 1.08rem; opacity: .62; padding: 2px 8px; border-radius: 999px; }
-.home .modes button[aria-selected="true"] { background: none; color: var(--paper-ink); opacity: 1; text-decoration: underline wavy var(--timer-ink); text-underline-offset: 6px; }
+.home .modes button[aria-selected="true"] { background: none; color: var(--paper-ink); opacity: 1; }
 .time-row { position: relative; display: flex; align-items: center; justify-content: center; }
 .home .time { font-family: var(--font-display); font-weight: 800; font-size: min(21vw, 15vh, 8.5rem); line-height: 1.02; color: var(--timer-fill); -webkit-text-stroke: .05em var(--timer-ink); paint-order: stroke fill; display: flex; filter: drop-shadow(0 3px 0 rgba(60, 40, 40, .12)); }
 .sticky {
@@ -474,7 +474,17 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
 .sub { display: flex; gap: 6px; align-items: center; }
 .sub button { border: 0; background: none; font-family: var(--font-hand); font-size: 1.05rem; padding: 4px 4px; opacity: .85; }
 .home .status { font-size: .92rem; font-weight: 700; text-align: center; max-width: 420px; }
-.home .rounds { padding: 0; }
+.home .status, .home .rounds { display: none !important; }
+/* look settings */
+.look { display: grid; gap: 12px; }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+.swatch { border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 14px; padding: 10px 6px; display: grid; justify-items: center; gap: 6px; font-weight: 800; font-size: .85rem; color: var(--ink); }
+.swatch i { width: 34px; height: 34px; border-radius: 50%; background: var(--sw); box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--sw) 45%, #ffffff); }
+.swatch[aria-pressed="true"], .fontopt[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+.fontlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.fontopt { border: 1.5px solid var(--line); background: var(--surface-2); border-radius: 14px; padding: 10px 12px; text-align: left; display: grid; gap: 2px; color: var(--ink); min-width: 0; }
+.fontopt .big { font-size: 2rem; line-height: 1.1; font-weight: 800; color: var(--timer-fill); -webkit-text-stroke: 1.4px var(--timer-ink); white-space: nowrap; overflow: hidden; }
+.fontopt .nm { font-size: 1.05rem; }
 .home .rounds span { color: var(--paper-ink); }
 
 /* full screen mode */
@@ -951,6 +961,13 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
       <div><h2>Account</h2><div class="muted">Sign in to sync your tasks, seeds and unlocks between devices.</div></div>
       <button class="sync-chip" id="syncChip" data-state="local"><span class="dot"></span><span class="lbl" id="syncLbl">Sign in</span></button>
     </section>
+    <section class="card pad look">
+      <h2>Look</h2>
+      <h3>Colours</h3>
+      <div class="swatches" id="paletteList" role="group" aria-label="Colour theme"></div>
+      <h3>Fonts</h3>
+      <div class="fontlist" id="fontList" role="group" aria-label="Font theme"></div>
+    </section>
     <section class="card pad settings">
       <h2>Timer</h2>
       <div class="set-grid">
@@ -1099,7 +1116,7 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
     const t = todayKey();
     return {
       v: 2, updatedAt: 0,
-      settings: { focus: 25, short: 5, long: 15, every: 4, goal: 6, autoBreak: true, autoFocus: false, sound: true, wake: true, theme: 'auto' },
+      settings: { focus: 25, short: 5, long: 15, every: 4, goal: 6, autoBreak: true, autoFocus: false, sound: true, wake: true, theme: 'auto', palette: 'berry', fontTheme: 'cozy' },
       days: { [t]: [
         { id: uid(), text: 'Review lecture notes', mins: 50, start: '09:30', est: 2, pomos: 1, spent: 25, done: false, sample: true },
         { id: uid(), text: 'Finish lab exercises', mins: 75, start: '13:00', est: 3, pomos: 0, spent: 0, done: false, sample: true },
@@ -1224,6 +1241,33 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
       body.append(p(`Signed in as ${authUser.email || authUser.displayName || 'you'}. Your tasks, seeds and unlocks sync to every device you sign in on.`));
       const out = document.createElement('button'); out.className = 'btn-ghost'; out.textContent = 'Sign out';
       out.onclick = async () => { await fb.A.signOut(fb.auth); $('acct').close(); toast('Signed out. Your data stays on this device too.'); };
+      const hasPw = (authUser.providerData || []).some(pd => pd.providerId === 'password');
+      if (!hasPw && authUser.email) {
+        const box = document.createElement('form'); box.style.display = 'grid'; box.style.gap = '10px';
+        box.innerHTML = '<div class="or">widget password</div>' +
+          '<p class="muted" style="margin:0">To use the iPhone widget, add a password to this account. You’ll still be able to sign in with Google too.</p>' +
+          '<label class="field" for="pwNew">New password<input type="password" id="pwNew" autocomplete="new-password" minlength="6" required></label>' +
+          '<button type="submit" class="btn-accent">Add password</button><div class="err" id="pwErr"></div>';
+        box.addEventListener('submit', async e => {
+          e.preventDefault();
+          const errEl = box.querySelector('#pwErr'), pw = box.querySelector('#pwNew').value;
+          try {
+            const cred = fb.A.EmailAuthProvider.credential(authUser.email, pw);
+            await fb.A.linkWithCredential(authUser, cred);
+            errEl.textContent = ''; toast(`Password added. Use ${authUser.email} with it in the widget.`); renderAcct();
+          } catch (err) {
+            const c = String(err && err.code || '');
+            errEl.textContent = c.includes('requires-recent-login') ? 'For safety, sign out, sign back in with Google, then try again.'
+              : c.includes('weak-password') ? 'Use a password with at least 6 characters.'
+              : c.includes('provider-already-linked') || c.includes('credential-already-in-use') ? 'This account already has a password.'
+              : c.includes('operation-not-allowed') ? 'Turn on Email/Password sign-in in Firebase first (Authentication → Sign-in method).'
+              : 'Couldn’t add the password. Try again.';
+          }
+        });
+        body.append(box);
+      } else if (hasPw) {
+        body.append(p(`Widget sign-in: use ${authUser.email} and your Burrow password.`));
+      }
       body.append(out);
       return;
     }
@@ -1406,11 +1450,79 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
   $('previewHost').appendChild(preview);
 
   // ---------- render: header ----------
+  const PALETTES = [
+    { id: 'berry', name: 'Berry', sw: '#c4587a' },
+    { id: 'sage', name: 'Sage', sw: '#5f8f6a', ink: '#5f8f6a', ai: '#ffffff' },
+    { id: 'ocean', name: 'Ocean', sw: '#3f7fb0', ink: '#3f7fb0', ai: '#ffffff' },
+    { id: 'lavender', name: 'Lavender', sw: '#8a6cc4', ink: '#8a6cc4', ai: '#ffffff' },
+    { id: 'peach', name: 'Peach', sw: '#e07b4f', ink: '#e07b4f', ai: '#ffffff' },
+    { id: 'sunny', name: 'Sunny', sw: '#e0a91c', ink: '#d39a12', ai: '#3a2a10' },
+    { id: 'cocoa', name: 'Cocoa', sw: '#8a5a44', ink: '#8a5a44', dark: '#c9967c', ai: '#ffffff' },
+    { id: 'ink', name: 'Ink', sw: '#4a4a52', ink: '#4a4a52', dark: '#c4c4cf', ai: '#ffffff', aiDark: '#1d1d22' }
+  ];
+  const FONT_THEMES = [
+    { id: 'cozy', name: 'Cozy', display: '"Sniglet"', hand: '"Patrick Hand"' },
+    { id: 'bubbly', name: 'Bubbly', display: '"Fredoka"', hand: '"Fredoka"', fam: 'Fredoka:wght@500;700' },
+    { id: 'chunky', name: 'Chunky', display: '"Lilita One"', hand: '"Patrick Hand"', fam: 'Lilita+One', dw: '.56em' },
+    { id: 'handwritten', name: 'Handwritten', display: '"Caveat"', hand: '"Caveat"', fam: 'Caveat:wght@500;700', dw: '.5em' },
+    { id: 'clean', name: 'Clean', display: '"Quicksand"', hand: '"Quicksand"', fam: 'Quicksand:wght@500;700', dw: '.6em' },
+    { id: 'typewriter', name: 'Typewriter', display: '"Courier Prime"', hand: '"Courier Prime"', fam: 'Courier+Prime:wght@400;700', dw: '.62em' },
+    { id: 'pixel', name: 'Pixel', display: '"Silkscreen"', hand: '"VT323"', fam: 'Silkscreen:wght@400;700&family=VT323', dw: '.78em' }
+  ];
+  function loadFont(ft) {
+    if (!ft.fam || document.getElementById('font-' + ft.id)) return;
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.id = 'font-' + ft.id;
+    l.href = `https://fonts.googleapis.com/css2?family=${ft.fam}&display=swap`;
+    document.head.appendChild(l);
+  }
+  const isDark = () => S.settings.theme === 'dark' || (S.settings.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+  function applyLookTheme() {
+    const root = document.documentElement.style;
+    const p = PALETTES.find(x => x.id === S.settings.palette) || PALETTES[0];
+    if (p.ink) {
+      const dark = isDark();
+      root.setProperty('--timer-ink', dark && p.dark ? p.dark : p.ink);
+      root.setProperty('--accent', dark && p.dark ? p.dark : p.ink);
+      root.setProperty('--accent-ink', dark && p.aiDark ? p.aiDark : p.ai);
+    } else { ['--timer-ink', '--accent', '--accent-ink'].forEach(k => root.removeProperty(k)); }
+    const f = FONT_THEMES.find(x => x.id === S.settings.fontTheme) || FONT_THEMES[0];
+    loadFont(f);
+    if (f.id === 'cozy') { ['--font-display', '--font-hand', '--digit-w'].forEach(k => root.removeProperty(k)); }
+    else {
+      root.setProperty('--font-display', `${f.display}, "Sniglet", ui-rounded, system-ui, sans-serif`);
+      root.setProperty('--font-hand', `${f.hand}, "Patrick Hand", ui-rounded, system-ui, sans-serif`);
+      if (f.dw) root.setProperty('--digit-w', f.dw); else root.removeProperty('--digit-w');
+    }
+  }
+  try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => applyLookTheme()); } catch (e) {}
+  function renderLookPicker() {
+    const pl = $('paletteList'); pl.innerHTML = '';
+    PALETTES.forEach(p => {
+      const b = document.createElement('button'); b.className = 'swatch';
+      b.style.setProperty('--sw', p.sw);
+      b.setAttribute('aria-pressed', String(S.settings.palette === p.id));
+      b.innerHTML = '<i></i><span></span>'; b.querySelector('span').textContent = p.name;
+      b.onclick = () => { S.settings.palette = p.id; save(); applyLookTheme(); renderLookPicker(); };
+      pl.appendChild(b);
+    });
+    const fl = $('fontList'); fl.innerHTML = '';
+    FONT_THEMES.forEach(f => {
+      loadFont(f);
+      const b = document.createElement('button'); b.className = 'fontopt';
+      b.setAttribute('aria-pressed', String(S.settings.fontTheme === f.id));
+      b.innerHTML = '<span class="big">25:00</span><span class="nm"></span>';
+      b.querySelector('.big').style.fontFamily = `${f.display}, "Sniglet", sans-serif`;
+      const nm = b.querySelector('.nm'); nm.textContent = f.name; nm.style.fontFamily = `${f.hand}, "Patrick Hand", sans-serif`;
+      b.onclick = () => { S.settings.fontTheme = f.id; save(); applyLookTheme(); renderLookPicker(); };
+      fl.appendChild(b);
+    });
+  }
   function renderHeader() {
     $('walletChip').innerHTML = `${seedSvg('')}<span>${balance()}</span>`;
     $('walletChip').setAttribute('aria-label', `${balance()} seeds. Open the shop.`);
     const th = S.settings.theme;
     if (th === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', th);
+    applyLookTheme();
   }
 
   // ---------- render: timer ----------
@@ -1862,6 +1974,7 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
   function renderPage() {
     const n = openPageName;
     if (n === 'shop') renderShop();
+    if (n === 'settings') renderLookPicker();
     if (n === 'stats') renderProgress();
     if (n === 'timeline') renderTimeline();
     if (n === 'todos') { renderTasks(); renderQuests(); }
