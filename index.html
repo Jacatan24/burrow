@@ -550,6 +550,28 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
 .cat-chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 6px 12px; font-weight: 800; color: var(--ink); font-size: .86rem; display: inline-flex; gap: 6px; align-items: center; }
 .cat-chip i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
 .cat-chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+/* expense sheet v2 */
+#expSheet { width: min(520px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); }
+.exp-form { gap: 12px; padding-bottom: 0; }
+.exp-box { display: grid; gap: 12px; padding: 14px; border-radius: 18px; background: var(--surface-2); border: 1px solid var(--line); }
+.exp-box .field input { background: var(--surface); }
+.exp-sep { height: 1px; background: var(--line); margin: 2px -14px; }
+.store-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: -4px; }
+.store-chips:empty { display: none; }
+.store-chips button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-weight: 700; font-size: .85rem; color: var(--ink); }
+.store-chips button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.items-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; text-transform: none; letter-spacing: 0; }
+.items-list:empty { display: none; }
+.item-row, .item-add { display: grid; grid-template-columns: minmax(0, 1fr) 96px 34px; gap: 6px; align-items: center; text-transform: none; letter-spacing: 0; }
+.item-row input, .item-add input { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 10px 12px; font-weight: 700; font-size: .95rem; color: var(--ink); min-width: 0; width: 100%; }
+.item-row input.pr, .item-add input#itNewAmt { text-align: right; font-variant-numeric: tabular-nums; }
+.item-plus, .item-del { width: 34px; height: 34px; border: 0; background: transparent; border-radius: 10px; font-size: 1.5rem; line-height: 1; color: var(--accent); padding: 0; }
+.item-del { color: var(--muted); font-size: 1.2rem; }
+.items-sum { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .85rem; font-weight: 700; color: var(--muted); text-transform: none; letter-spacing: 0; }
+.items-sum:empty { display: none; }
+.exp-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.exp-foot { position: sticky; bottom: 0; margin: 0 -20px; padding: 12px 20px calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--line); }
+.exp-save { width: 100%; min-height: 52px; border-radius: 16px; font-size: 1.05rem; }
 /* look settings */
 .look { display: grid; gap: 12px; }
 .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
@@ -1131,18 +1153,35 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
 </dialog>
 
 <dialog class="sheet" id="expSheet" aria-labelledby="expTitle">
-  <form class="sheet-body" id="expForm" autocomplete="off">
+  <form class="sheet-body exp-form" id="expForm" autocomplete="off">
     <div class="sheet-top"><h2 id="expTitle">New expense</h2><button type="button" class="sheet-close" id="expClose" aria-label="Close">×</button></div>
     <div class="rcpt-preview" id="expPhotoWrap" hidden><img id="expPhoto" alt="Receipt photo"></div>
     <div class="ocr-status" id="ocrStatus"></div>
-    <label class="field" for="expAmt">Amount<input type="text" inputmode="decimal" id="expAmt" placeholder="0.00" required></label>
-    <label class="field" for="expMerchant">Where<input type="text" id="expMerchant" maxlength="80" placeholder="Store or place"></label>
-    <label class="field" for="expDate">Date<input type="date" id="expDate" required></label>
-    <div class="field"><span>Category</span><div class="dur-row" id="expCats"></div></div>
-    <label class="field" for="expNote">Note<input type="text" id="expNote" maxlength="120" placeholder="Optional"></label>
-    <div class="row2"><button type="submit" class="btn-accent">Save</button><label class="btn-ghost file-btn" for="rcptInput2" id="expPhotoBtn">Add receipt photo</label></div>
+    <section class="exp-box">
+      <label class="field" for="expMerchant">Shop<input type="text" id="expMerchant" maxlength="80" placeholder="Which shop?"></label>
+      <div class="store-chips" id="expStores"></div>
+      <label class="field" for="expDate">Date<input type="date" id="expDate" required></label>
+      <label class="field" for="expAmt"><span id="expAmtLbl">Total</span><input type="text" inputmode="decimal" id="expAmt" placeholder="Required"></label>
+      <div class="exp-sep"></div>
+      <div class="field"><span>Items</span>
+        <ul class="items-list" id="expItems"></ul>
+        <div class="item-add">
+          <input type="text" id="itNew" placeholder="Add an item" maxlength="80" aria-label="Item name">
+          <input type="text" inputmode="decimal" id="itNewAmt" placeholder="0.00" aria-label="Item price">
+          <button type="button" class="item-plus" id="itAdd" aria-label="Add item">+</button>
+        </div>
+        <div class="items-sum" id="expItemsSum"></div>
+      </div>
+      <div class="exp-sep"></div>
+      <div class="field"><span>Category</span><div class="dur-row" id="expCats"></div></div>
+      <label class="field" for="expNote">Note<input type="text" id="expNote" maxlength="120" placeholder="Optional"></label>
+    </section>
+    <div class="exp-actions">
+      <label class="btn-ghost file-btn" for="rcptInput2" id="expPhotoBtn">Add receipt photo</label>
+      <button type="button" class="link-btn danger" id="expDelete">Delete expense</button>
+    </div>
     <input type="file" id="rcptInput2" accept="image/*" class="vh" tabindex="-1">
-    <button type="button" class="link-btn danger" id="expDelete" style="justify-self:start">Delete expense</button>
+    <div class="exp-foot"><button type="submit" class="btn-accent exp-save" id="expSave">Save receipt</button></div>
   </form>
 </dialog>
 
@@ -2539,7 +2578,7 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
         const c = catOf(e.cat), b = document.createElement('button'); b.className = 'exp';
         b.innerHTML = `<span class="dot" style="background:${c[2]}"></span><span><span class="mn"></span><span class="sb"></span></span><span class="am"></span>`;
         b.querySelector('.mn').textContent = e.merchant || c[1];
-        b.querySelector('.sb').textContent = [c[1], e.note, e.photo ? 'receipt' : ''].filter(Boolean).join(' · ');
+        b.querySelector('.sb').textContent = [c[1], (e.items || []).length ? `${e.items.length} item${e.items.length === 1 ? '' : 's'}` : '', e.note, e.photo ? 'receipt' : ''].filter(Boolean).join(' · ');
         b.querySelector('.am').textContent = money(e.amount);
         b.onclick = () => openExpSheet(e);
         host.appendChild(b);
@@ -2623,10 +2662,78 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
     if (date && date > todayKey()) date = null;
     const head = lines.slice(0, 6).find(l => /[a-z]{3,}/i.test(l) && !/receipt|invoice|welcome|tel|phone|www|http|order|server|table|\d{3}[- ]\d{3}/i.test(l));
     const merchant = head ? head.replace(/[^\w&'’ .-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40) : '';
-    return { total, date, merchant, cat: guessCat(text) };
+    const skip = /total|tota[l1]|sub|tax|gst|pst|hst|visa|master|debit|amex|credit|cash|change|balance|due|tip|gratuity|paid|approved|auth|card|points|saving|discount|rounding|tender/i;
+    const items = [];
+    lines.forEach(l => {
+      if (skip.test(l)) return;
+      const m = l.match(/^(.*?[a-z].*?)\s+\$?(\d{1,4}[.,]\d{2})\s*[a-z]{0,2}$/i);
+      if (!m) return;
+      const name = m[1].replace(/^\d+\s*[@x]\s*\$?\d+[.,]\d{2}\s*/i, '').replace(/^[\d\s#*x@-]+(?=[a-z])/i, '').replace(/[^\w&'’ .%/-]/g, '').replace(/\s+/g, ' ').trim();
+      const amount = Math.round(Number(m[2].replace(',', '.')) * 100);
+      if (name.length >= 2 && amount > 0) items.push({ name: titleCase(name).slice(0, 60), amount });
+    });
+    return { total, date, merchant, cat: guessCat(text), items: items.slice(0, 40) };
   }
 
-  let expEdit = null, expPhoto = null, expPhotoChanged = false, expTouched = {}, expCat = 'food';
+  let expEdit = null, expPhoto = null, expPhotoChanged = false, expTouched = {}, expCat = 'food', expItems = [];
+  const parseMoney = v => { const raw = String(v || '').replace(/[^0-9.,]/g, '').replace(/,(?=\d{3}\b)/g, '').replace(',', '.'); const n = Math.round(parseFloat(raw) * 100); return Number.isFinite(n) ? n : 0; };
+  const plain = c => (c / 100).toFixed(2);
+  function renderExpItems() {
+    const ul = $('expItems'); ul.innerHTML = '';
+    expItems.forEach((it, i) => {
+      const li = document.createElement('li'); li.className = 'item-row';
+      const nm = document.createElement('input'); nm.type = 'text'; nm.value = it.name; nm.maxLength = 80; nm.setAttribute('aria-label', 'Item name');
+      nm.oninput = () => { it.name = nm.value; };
+      const pr = document.createElement('input'); pr.type = 'text'; pr.inputMode = 'decimal'; pr.className = 'pr'; pr.value = plain(it.amount); pr.setAttribute('aria-label', `Price of ${it.name}`);
+      pr.oninput = () => { it.amount = parseMoney(pr.value); updateItemsSum(); };
+      pr.onblur = () => { pr.value = plain(it.amount); };
+      const del = document.createElement('button'); del.type = 'button'; del.className = 'item-del'; del.textContent = '×'; del.setAttribute('aria-label', `Remove ${it.name}`);
+      del.onclick = () => { expItems.splice(i, 1); renderExpItems(); };
+      li.append(nm, pr, del); ul.appendChild(li);
+    });
+    updateItemsSum();
+  }
+  function updateItemsSum() {
+    const box = $('expItemsSum'); box.innerHTML = '';
+    if (!expItems.length) return;
+    const sum = expItems.reduce((a, it) => a + (it.amount || 0), 0);
+    const total = parseMoney($('expAmt').value);
+    if (!expTouched.expAmt) { $('expAmt').value = sum ? plain(sum) : ''; }
+    const t = parseMoney($('expAmt').value);
+    const span = document.createElement('span');
+    span.textContent = `${expItems.length} item${expItems.length === 1 ? '' : 's'} · ${money(sum)}` + (t && t !== sum ? ` (total is ${money(t)}${t > sum ? ', tax or tip may make up the rest' : ''})` : '');
+    box.appendChild(span);
+    if (t !== sum) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'link-btn'; b.textContent = 'Use items total';
+      b.onclick = () => { $('expAmt').value = plain(sum); expTouched.expAmt = true; updateItemsSum(); };
+      box.appendChild(b);
+    }
+  }
+  function addExpItem() {
+    const name = $('itNew').value.trim(), amount = parseMoney($('itNewAmt').value);
+    if (!name && !amount) { $('itNew').focus(); return; }
+    expItems.push({ id: uid(), name: name || 'Item', amount });
+    $('itNew').value = ''; $('itNewAmt').value = '';
+    renderExpItems(); $('itNew').focus();
+  }
+  function renderStoreChips() {
+    const counts = {};
+    S.expenses.forEach(e => { const m = (e.merchant || '').trim(); if (m) { const k = m.toLowerCase(); counts[k] = counts[k] || { name: m, n: 0 }; counts[k].n++; } });
+    const top = Object.values(counts).sort((a, b) => b.n - a.n).slice(0, 5);
+    const host = $('expStores'); host.innerHTML = '';
+    const cur = $('expMerchant').value.trim().toLowerCase();
+    top.forEach(st => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = st.name;
+      b.setAttribute('aria-pressed', String(cur === st.name.toLowerCase()));
+      b.onclick = () => {
+        $('expMerchant').value = st.name; expTouched.expMerchant = true;
+        const last = S.expenses.slice().reverse().find(e => (e.merchant || '').toLowerCase() === st.name.toLowerCase());
+        if (last && !expTouched.cat) { expCat = last.cat; renderExpCats(); }
+        renderStoreChips();
+      };
+      host.appendChild(b);
+    });
+  }
   function renderExpCats() {
     const host = $('expCats'); host.innerHTML = '';
     EXP_CATS.forEach(([id, name, col]) => {
@@ -2640,13 +2747,18 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
   function showExpPhoto(p) { $('expPhotoWrap').hidden = !p; if (p) $('expPhoto').src = p; $('expPhoto').classList.remove('zoom'); $('expPhotoBtn').textContent = p ? 'Replace photo' : 'Add receipt photo'; }
   function openExpSheet(e, photo) {
     expEdit = e || null; expPhoto = photo || null; expPhotoChanged = !!photo; expTouched = {};
-    $('expTitle').textContent = e ? 'Edit expense' : 'New expense';
+    $('expTitle').textContent = e ? 'Edit expense' : photo ? 'Check this over' : 'New expense';
     $('expAmt').value = e ? (e.amount / 100).toFixed(2) : '';
     $('expMerchant').value = e ? (e.merchant || '') : '';
     $('expDate').value = e ? e.date : todayKey();
     $('expNote').value = e ? (e.note || '') : '';
     expCat = e ? e.cat : 'food'; renderExpCats();
     $('expDelete').hidden = !e; $('ocrStatus').textContent = '';
+    if (e) expTouched.expAmt = true;
+    expItems = e && e.items ? e.items.map(it => ({ ...it })) : []; $('itNew').value = ''; $('itNewAmt').value = '';
+    $('expAmtLbl').textContent = `Total · ${S.settings.currency || 'CAD'}`;
+    $('expSave').textContent = e ? 'Save changes' : 'Save receipt';
+    renderExpItems(); renderStoreChips();
     showExpPhoto(photo);
     if (e && e.photo && !photo) { $('ocrStatus').textContent = 'Loading receipt photo…'; getPhoto(e.id).then(p => { if (expEdit !== e) return; $('ocrStatus').textContent = p ? '' : 'Receipt photo isn’t available on this device.'; if (p) { expPhoto = p; showExpPhoto(p); } }); }
     if (!$('expSheet').open) { try { $('expSheet').showModal(); } catch (err) { $('expSheet').setAttribute('open', ''); } }
@@ -2664,16 +2776,21 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
       const { data } = await Tess.recognize(big, 'eng');
       if (!$('expSheet').open) return;
       const r = parseReceipt(data.text || '');
-      if (r.total != null && !expTouched.expAmt) $('expAmt').value = r.total.toFixed(2);
+      if (r.total != null && !expTouched.expAmt) { $('expAmt').value = r.total.toFixed(2); expTouched.expAmt = true; }
       if (r.merchant && !expTouched.expMerchant) $('expMerchant').value = titleCase(r.merchant);
       if (r.date && !expTouched.expDate) $('expDate').value = r.date;
       if (r.cat && !expTouched.cat) { expCat = r.cat; renderExpCats(); }
+      if (r.items && r.items.length && !expItems.length) { expItems = r.items.map(it => ({ id: uid(), ...it })); renderExpItems(); }
+      renderStoreChips();
       $('ocrStatus').textContent = r.total != null ? 'Filled in from the receipt. Double-check the amount before saving.' : 'Couldn’t find the total. Type it in below.';
     } catch (e) {
       if ($('expSheet').open) $('ocrStatus').textContent = 'Couldn’t read this receipt automatically. Type the details in below.';
     }
   }
-  ['expAmt', 'expMerchant', 'expDate'].forEach(id => $(id).addEventListener('input', () => { expTouched[id] = true; }));
+  ['expAmt', 'expMerchant', 'expDate'].forEach(id => $(id).addEventListener('input', () => { expTouched[id] = true; if (id === 'expAmt') updateItemsSum(); if (id === 'expMerchant') renderStoreChips(); }));
+  $('itAdd').onclick = addExpItem;
+  $('itNew').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('itNewAmt').focus(); } });
+  $('itNewAmt').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addExpItem(); } });
   $('rcptInput').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handleReceipt(f, false); });
   $('rcptInput2').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handleReceipt(f, true); });
   $('addExpense').onclick = () => openExpSheet(null);
@@ -2681,11 +2798,12 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
   $('expPhoto').onclick = () => $('expPhoto').classList.toggle('zoom');
   $('expForm').addEventListener('submit', e => {
     e.preventDefault();
-    const raw = $('expAmt').value.replace(/[^0-9.,]/g, '').replace(/,(?=\d{3}\b)/g, '').replace(',', '.');
-    const amt = Math.round(parseFloat(raw) * 100);
+    if ($('itNew').value.trim() || $('itNewAmt').value.trim()) addExpItem();
+    let amt = parseMoney($('expAmt').value);
+    if (!amt && expItems.length) amt = expItems.reduce((a, it) => a + (it.amount || 0), 0);
     if (!amt || amt <= 0) { $('ocrStatus').textContent = 'Enter how much you spent.'; $('expAmt').focus(); return; }
     const rec = expEdit || { id: uid() };
-    Object.assign(rec, { amount: amt, merchant: $('expMerchant').value.trim(), date: $('expDate').value || todayKey(), cat: expCat, note: $('expNote').value.trim() });
+    Object.assign(rec, { amount: amt, merchant: $('expMerchant').value.trim(), date: $('expDate').value || todayKey(), cat: expCat, note: $('expNote').value.trim(), items: expItems.filter(it => (it.name || '').trim() || it.amount).map(it => ({ id: it.id || uid(), name: (it.name || 'Item').trim(), amount: it.amount || 0 })) });
     if (expPhotoChanged && expPhoto) { rec.photo = true; savePhoto(rec.id, expPhoto); }
     const isNew = !expEdit;
     if (isNew) S.expenses.push(rec);
