@@ -454,7 +454,7 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
 .home .modes button { flex: none; background: none; border: 0; font-family: var(--font-hand); font-weight: 400; font-size: 1.08rem; opacity: .62; padding: 2px 8px; border-radius: 999px; }
 .home .modes button[aria-selected="true"] { background: none; color: var(--paper-ink); opacity: 1; }
 .time-row { position: relative; display: flex; align-items: center; justify-content: center; }
-.home .time { font-family: var(--font-display); font-weight: 800; font-size: min(21vw, 15vh, 8.5rem); line-height: 1.02; color: var(--timer-fill); -webkit-text-stroke: .05em var(--timer-ink); paint-order: stroke fill; display: flex; filter: drop-shadow(0 3px 0 rgba(60, 40, 40, .12)); }
+.home .time { font-family: var(--font-display); font-weight: 800; font-size: min(21vw, 15vh, 8.5rem); line-height: 1.02; color: var(--timer-fill-x, var(--timer-fill)); -webkit-text-stroke: .05em var(--timer-outline, var(--timer-ink)); paint-order: stroke fill; display: flex; filter: drop-shadow(0 3px 0 rgba(60, 40, 40, .12)); }
 .sticky {
   position: absolute; left: calc(100% + 6px); top: 50%; transform: translateY(-50%) rotate(5deg);
   width: 58px; height: 58px; border: 0; background: var(--note); color: var(--note-ink);
@@ -673,6 +673,32 @@ body.fs-on .tabbar { display: none; }
 #page-shop[data-seg="quests"] .shop-only, #page-shop:not([data-seg="quests"]) .quests-only { display: none !important; }
 #page-shop .seg { margin: 0 auto; }
 .corner-link.has-dot::after { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-left: 4px; vertical-align: super; }
+/* v13 */
+#todoSeg { margin: 0 auto; }
+.todo-inbox { display: grid; gap: 12px; }
+.gcal-refresh { justify-self: start; padding: 0; }
+.swatches.small { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
+.swatches.small .swatch { padding: 8px 4px; font-size: .74rem; }
+.swatches.small .swatch i { width: 28px; height: 28px; }
+.swatch.custom { position: relative; overflow: hidden; }
+.swatch.custom input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+.swatch.custom i { background: conic-gradient(#e85a7a, #f2c14e, #5f9e6e, #3f7fb0, #8a6cc4, #e85a7a); }
+.timer-preview { justify-self: center; font-family: var(--font-display); font-weight: 800; font-size: 3.4rem; line-height: 1.1; padding: 8px 22px; border-radius: 18px; background: var(--wall);
+  color: var(--timer-fill-x, var(--timer-fill)); -webkit-text-stroke: .05em var(--timer-outline, var(--timer-ink)); paint-order: stroke fill; }
+.home .time { touch-action: none; cursor: ns-resize; user-select: none; -webkit-user-select: none; }
+.home.running .time { cursor: default; }
+.time.adjusting { transform: scale(1.04); transition: transform .1s; }
+.swipe-hint { font-size: .78rem; font-weight: 700; opacity: .75; color: var(--paper-ink); text-shadow: 0 0 2px var(--paper), 0 0 6px var(--paper); }
+.home.running .swipe-hint, .home.immersive .swipe-hint { display: none; }
+.snd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.snd { display: grid; gap: 6px; padding: 10px 12px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--surface-2); }
+.snd.on { border-color: var(--timer-ink); background: color-mix(in srgb, var(--timer-ink) 10%, var(--surface)); }
+.snd button { border: 0; background: transparent; padding: 0; text-align: left; display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--ink); }
+.snd button svg { width: 26px; height: 26px; flex: none; fill: none; stroke: var(--timer-ink); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.snd input[type=range] { width: 100%; accent-color: var(--timer-ink); }
+.snd:not(.on) input[type=range] { display: none; }
+#sndMaster { accent-color: var(--timer-ink); }
+#soundBtn.playing::after { content: " ♪"; }
 /* look settings */
 .look { display: grid; gap: 12px; }
 .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
@@ -1011,7 +1037,7 @@ body.fs-on .tabbar { display: none; }
       <button role="tab" data-mode="long" aria-selected="false">Long break</button>
     </div>
     <div class="time-row">
-      <div class="time" id="time"></div>
+      <div class="time" id="time" role="slider" tabindex="0" aria-label="Timer length. Swipe up or down to change it."></div>
       <button class="sticky" id="stickyBtn" data-open="todos" aria-label="Open to-do list">
         <span class="pin" aria-hidden="true"></span>
         <span class="sticky-title">to-do</span>
@@ -1019,6 +1045,7 @@ body.fs-on .tabbar { display: none; }
       </button>
     </div>
     <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <div class="swipe-hint" id="swipeHint">swipe the timer up or down to change it</div>
     <button class="task-line" id="currentBtn" data-open="todos"><span id="currentTxt">Pick a task</span></button>
     <button class="next-step" id="nextStep" hidden><span class="box" aria-hidden="true"></span><span id="nextStepTxt"></span></button>
     <button class="start-btn" id="startBtn">
@@ -1028,6 +1055,7 @@ body.fs-on .tabbar { display: none; }
     <div class="sub">
       <button id="resetBtn">Reset</button><span aria-hidden="true">·</span>
       <button id="skipBtn">Skip</button><span aria-hidden="true">·</span>
+      <button id="soundBtn">Sounds</button><span aria-hidden="true">·</span>
       <button id="fsBtn">Full screen</button>
     </div>
     <div class="status" id="status"></div>
@@ -1045,7 +1073,17 @@ body.fs-on .tabbar { display: none; }
 <section class="page tab" id="page-todos" hidden aria-labelledby="ttl-todos">
   <div class="tab-head"><h1 id="ttl-todos"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 6h22l3 3v25H8z" fill="var(--note)" stroke="var(--paper-ink)" stroke-width="1.6" stroke-linejoin="round"/><circle cx="20" cy="7" r="2.6" fill="var(--pin)"/><path d="M13 17l2 2 4-4M13 26l2 2 4-4M22 18h6M22 27h6" fill="none" stroke="var(--paper-ink)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>To-do</span></h1></div>
   <div class="page-body">
-    <section class="card pad plan" aria-label="Plan for the day">
+    <div class="seg" id="todoSeg" role="tablist" aria-label="To-do sections">
+      <button data-t="day" role="tab">Day</button>
+      <button data-t="inbox" role="tab">Inbox<span class="badge" id="inboxCount"></span></button>
+    </div>
+      <section class="card pad todo-inbox" id="todoInboxView" hidden>
+        <p class="muted" style="margin:0">Tasks without a day. Drop anything here, then move it to a day when you're ready.</p>
+        <form class="inbox-add" id="inboxForm" autocomplete="off"><input type="text" id="inboxNew" placeholder="Add to inbox…" maxlength="120" aria-label="New inbox task"><button class="btn-dark" type="submit">Add</button></form>
+        <div class="inbox-tools"><button class="ai-btn" id="aiSortBtn">✦ Sort with AI</button><button class="ai-btn" id="aiDumpBtn">✦ Brain dump</button></div>
+        <ul class="inbox" id="inboxList"></ul>
+      </section>
+    <section class="card pad plan" id="todoDayView" aria-label="Plan for the day">
       <div class="plan-head">
         <div class="plan-title">
           <h2 id="planTitle">Today's plan</h2>
@@ -1083,7 +1121,6 @@ body.fs-on .tabbar { display: none; }
   <div class="page-body">
     <section class="card pad tl-card" id="tlCard">
       <div class="seg" id="tlViews" role="tablist" aria-label="Timeline view">
-        <button data-v="inbox" role="tab">Inbox<span class="badge" id="inboxCount"></span></button>
         <button data-v="day" role="tab">Day</button>
         <button data-v="week" role="tab">Week</button>
         <button data-v="month" role="tab">Month</button>
@@ -1097,7 +1134,7 @@ body.fs-on .tabbar { display: none; }
         </nav>
         <button class="ai-btn" id="aiPlanBtn" hidden>✦ Plan my day</button>
       </div>
-      <div id="tlGcal"><div class="gcal-bar" id="gcalBar"></div><div class="gcal-cals" id="gcalCals" hidden></div></div>
+      <button class="link-btn gcal-refresh" id="gcalRefresh" hidden>↻ Refresh Google Calendar</button>
       <div class="tl-view" id="tlDayView">
         <div class="tally" id="tlSummary"></div>
         <div class="allday" id="tlAllDay"></div>
@@ -1107,12 +1144,6 @@ body.fs-on .tabbar { display: none; }
       </div>
       <div class="tl-view" id="tlWeekView" hidden><div class="tally" id="wkSummary"></div><div class="wk" id="wkList"></div></div>
       <div class="tl-view" id="tlMonthView" hidden><div class="cal-dow" id="moDow"></div><div class="mo" id="moGrid"></div><div class="mo-detail" id="moDetail"></div></div>
-      <div class="tl-view" id="tlInboxView" hidden>
-        <p class="muted" style="margin:0">Tasks without a day. Drop anything here, then move it to a day when you're ready.</p>
-        <form class="inbox-add" id="inboxForm" autocomplete="off"><input type="text" id="inboxNew" placeholder="Add to inbox…" maxlength="120" aria-label="New inbox task"><button class="btn-dark" type="submit">Add</button></form>
-        <div class="inbox-tools"><button class="ai-btn" id="aiSortBtn">✦ Sort with AI</button><button class="ai-btn" id="aiDumpBtn">✦ Brain dump</button></div>
-        <ul class="inbox" id="inboxList"></ul>
-      </div>
       <button class="fab" id="tlAdd" aria-label="Add a task">+</button>
     </section>
   </div>
@@ -1223,10 +1254,20 @@ body.fs-on .tabbar { display: none; }
       </div>
       <div class="toggles"><label for="setNotifyTimer">When a focus session or break ends <input type="checkbox" id="setNotifyTimer"></label></div>
     </section>
+    <section class="card pad settings" id="gcalCard">
+      <h2>Google Calendar</h2>
+      <p class="muted" style="margin:0 0 10px">Show your Google Calendar events on the Timeline. Pick which calendars appear.</p>
+      <div id="tlGcal"><div class="gcal-bar" id="gcalBar"></div><div class="gcal-cals" id="gcalCals" hidden></div></div>
+    </section>
     <section class="card pad look">
       <h2>Look</h2>
       <h3>Colours</h3>
       <div class="swatches" id="paletteList" role="group" aria-label="Colour theme"></div>
+      <h3>Timer outline</h3>
+      <div class="swatches small" id="outlineList" role="group" aria-label="Timer outline colour"></div>
+      <h3>Timer inside</h3>
+      <div class="swatches small" id="fillList" role="group" aria-label="Timer inside colour"></div>
+      <div class="timer-preview" id="timerPreview" aria-hidden="true">25:00</div>
       <h3>Fonts</h3>
       <div class="fontlist" id="fontList" role="group" aria-label="Font theme"></div>
     </section>
@@ -1316,6 +1357,17 @@ body.fs-on .tabbar { display: none; }
     <input type="file" id="rcptInput2" accept="image/*" class="vh" tabindex="-1">
     <div class="exp-foot"><button type="submit" class="btn-accent exp-save" id="expSave">Save receipt</button></div>
   </form>
+</dialog>
+
+<dialog class="sheet" id="soundSheet" aria-labelledby="sndTitle">
+  <div class="sheet-body">
+    <div class="sheet-top"><h2 id="sndTitle">Study sounds</h2><button type="button" class="sheet-close" id="sndClose" aria-label="Close">×</button></div>
+    <p class="muted" style="margin:0">Tap sounds to mix them. Each one has its own volume.</p>
+    <div class="snd-grid" id="sndGrid"></div>
+    <label class="field" for="sndMaster">Volume<input type="range" id="sndMaster" min="0" max="1" step="0.01"></label>
+    <div class="toggles"><label for="sndAuto">Play only while I'm focusing <input type="checkbox" id="sndAuto"></label></div>
+    <div class="row2"><button type="button" class="btn-accent" id="sndPlay">Play</button><button type="button" class="btn-ghost" id="sndNone">Clear mix</button></div>
+  </div>
 </dialog>
 
 <dialog class="sheet" id="aiSheet" aria-labelledby="aiTitle">
@@ -1446,7 +1498,7 @@ body.fs-on .tabbar { display: none; }
     const t = todayKey();
     return {
       v: 2, updatedAt: 0,
-      settings: { focus: 25, short: 5, long: 15, every: 4, goal: 6, autoBreak: true, autoFocus: false, sound: true, wake: true, theme: 'auto', palette: 'berry', fontTheme: 'cozy', currency: 'CAD', budget: 0, gcalHidden: [], gcalKnown: [], notifyTimer: true, notifyLead: 5 },
+      settings: { focus: 25, short: 5, long: 15, every: 4, goal: 6, autoBreak: true, autoFocus: false, sound: true, wake: true, theme: 'auto', palette: 'berry', fontTheme: 'cozy', currency: 'CAD', budget: 0, gcalHidden: [], gcalKnown: [], notifyTimer: true, notifyLead: 5, outline: 'theme', fill: 'theme', sounds: {}, soundVol: 0.7, soundAuto: true },
       days: { [t]: [
         { id: uid(), text: 'Review lecture notes', mins: 50, start: '09:30', est: 2, pomos: 1, spent: 25, done: false, sample: true },
         { id: uid(), text: 'Finish lab exercises', mins: 75, start: '13:00', est: 3, pomos: 0, spent: 0, done: false, sample: true },
@@ -1717,8 +1769,8 @@ body.fs-on .tabbar { display: none; }
   const modeLen = m => Math.max(1, Number(S.settings[m]) || 1) * 60;
   const leftNow = () => T().running ? Math.max(0, Math.ceil((T().endsAt - Date.now()) / 1000)) : T().left;
   let doneFlash = 0;
-  function start() { const t = T(); if (t.running) return; t.endsAt = Date.now() + t.left * 1000; t.running = true; save(); renderTimer(); syncWake(); }
-  function pause() { const t = T(); if (!t.running) return; t.left = leftNow(); t.running = false; save(); renderTimer(); syncWake(); }
+  function start() { const t = T(); if (t.running) return; t.endsAt = Date.now() + t.left * 1000; t.running = true; save(); renderTimer(); syncWake(); try { syncSoundsToTimer(); } catch (e) {} }
+  function pause() { const t = T(); if (!t.running) return; t.left = leftNow(); t.running = false; save(); renderTimer(); syncWake(); try { syncSoundsToTimer(); } catch (e) {} }
   function setMode(m) { const t = T(); t.mode = m; t.running = false; t.left = modeLen(m); }
   const listOf = day => day === 'inbox' ? S.inbox : (S.days[day] = S.days[day] || []);
   const findTask = (id, day) => (day === 'inbox' ? S.inbox : (S.days[day] || [])).find(x => x.id === id);
@@ -1755,7 +1807,7 @@ body.fs-on .tabbar { display: none; }
     if (S.settings.notifyTimer && document.visibilityState !== 'visible') notify(wasFocus ? 'Focus session done!' : 'Break’s over', wasFocus ? 'Nice work. Time for a break.' : 'Ready for another focus session?', 'timer');
     chime(); doneFlash = Date.now();
     if (next === 'focus' ? S.settings.autoFocus : S.settings.autoBreak) { const t = T(); t.endsAt = Date.now() + t.left * 1000; t.running = true; }
-    save(); renderAll(); syncWake();
+    save(); renderAll(); syncWake(); try { syncSoundsToTimer(); } catch (e) {}
   }
   function tick() {
     const t = T();
@@ -1821,7 +1873,39 @@ body.fs-on .tabbar { display: none; }
     document.head.appendChild(l);
   }
   const isDark = () => S.settings.theme === 'dark' || (S.settings.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+  const OUTLINES = [['theme', 'Theme', null], ['#b4566e', 'Berry', '#b4566e'], ['#3a3330', 'Ink', '#3a3330'], ['#ffffff', 'White', '#ffffff'], ['#5f8f6a', 'Sage', '#5f8f6a'], ['#3f7fb0', 'Ocean', '#3f7fb0'], ['#8a6cc4', 'Lilac', '#8a6cc4'], ['#e07b4f', 'Peach', '#e07b4f']];
+  const FILLS = [['theme', 'Auto', null], ['#fff8f1', 'Cream', '#fff8f1'], ['#ffffff', 'White', '#ffffff'], ['#ffd9e2', 'Blush', '#ffd9e2'], ['#d6f0dc', 'Mint', '#d6f0dc'], ['#d6e8f8', 'Sky', '#d6e8f8'], ['#fff1b8', 'Butter', '#fff1b8'], ['#e6dcf8', 'Lilac', '#e6dcf8'], ['#2b2422', 'Cocoa', '#2b2422'], ['#1f2433', 'Night', '#1f2433']];
+  function applyTimerColours() {
+    const root = document.documentElement.style;
+    const o = S.settings.outline, f = S.settings.fill;
+    if (o && o !== 'theme') root.setProperty('--timer-outline', o); else root.removeProperty('--timer-outline');
+    if (f && f !== 'theme') root.setProperty('--timer-fill-x', f); else root.removeProperty('--timer-fill-x');
+  }
+  function swatchRow(host, list, key) {
+    host.innerHTML = '';
+    const cur = S.settings[key] || 'theme';
+    list.forEach(([id, name, col]) => {
+      const b = document.createElement('button'); b.className = 'swatch';
+      b.style.setProperty('--sw', col || (key === 'outline' ? 'var(--timer-ink)' : 'var(--timer-fill)'));
+      b.setAttribute('aria-pressed', String(cur === id));
+      b.innerHTML = '<i></i><span></span>'; b.querySelector('span').textContent = name;
+      b.onclick = () => { S.settings[key] = id; save(); applyTimerColours(); renderLookPicker(); };
+      host.appendChild(b);
+    });
+    const isCustom = !list.some(([id]) => id === cur);
+    const c = document.createElement('label'); c.className = 'swatch custom';
+    c.setAttribute('aria-pressed', String(isCustom));
+    if (isCustom) c.style.setProperty('--sw', cur);
+    c.innerHTML = '<i></i><span>Custom</span>';
+    if (isCustom) c.querySelector('i').style.background = cur;
+    const inp = document.createElement('input'); inp.type = 'color'; inp.value = /^#[0-9a-f]{6}$/i.test(cur) ? cur : '#b4566e';
+    inp.setAttribute('aria-label', `Custom ${key === 'outline' ? 'outline' : 'inside'} colour`);
+    inp.oninput = () => { S.settings[key] = inp.value; applyTimerColours(); c.querySelector('i').style.background = inp.value; };
+    inp.onchange = () => { S.settings[key] = inp.value; save(); renderLookPicker(); };
+    c.appendChild(inp); host.appendChild(c);
+  }
   function applyLookTheme() {
+    applyTimerColours();
     const root = document.documentElement.style;
     const p = PALETTES.find(x => x.id === S.settings.palette) || PALETTES[0];
     if (p.ink) {
@@ -1850,6 +1934,8 @@ body.fs-on .tabbar { display: none; }
       b.onclick = () => { S.settings.palette = p.id; save(); applyLookTheme(); renderLookPicker(); };
       pl.appendChild(b);
     });
+    swatchRow($('outlineList'), OUTLINES, 'outline');
+    swatchRow($('fillList'), FILLS, 'fill');
     const fl = $('fontList'); fl.innerHTML = '';
     FONT_THEMES.forEach(f => {
       loadFont(f);
@@ -2281,7 +2367,7 @@ body.fs-on .tabbar { display: none; }
       const cred = fb.A.GoogleAuthProvider.credentialFromResult(res);
       if (!cred || !cred.accessToken) throw new Error('no-token');
       storeGcalToken(cred.accessToken); toast('Google Calendar connected');
-      if (tab === 'timeline') renderTimeline();
+      renderGcalBar(); if (tab === 'timeline') renderTimeline();
     } catch (e) {
       const c = String((e && e.code) || e.message || '');
       if (/popup-blocked|operation-not-supported/.test(c)) {
@@ -2351,6 +2437,7 @@ body.fs-on .tabbar { display: none; }
     } finally {
       gcalInflight.delete(key);
       if (tab === 'timeline') renderTimeline();
+      if (openPageName === 'settings') renderGcalBar();
     }
   }
 
@@ -2364,13 +2451,15 @@ body.fs-on .tabbar { display: none; }
     if (gcalLive()) {
       const n = (gcal.cache[viewDay] || {}).events;
       const shown = n ? n.filter(ev => !hidden.includes(ev.cal)).length : 0;
-      txt.innerHTML = tlView === 'day' ? `Google Calendar <span class="muted">· ${n ? shown + ' event' + (shown === 1 ? '' : 's') + ' shown' : 'loading…'}</span>` : 'Google Calendar <span class="muted">· connected</span>';
+      const nc = gcal.cals ? gcal.cals.filter(c => !hidden.includes(c.id)).length : null;
+      txt.innerHTML = `Connected <span class="muted">· ${nc == null ? 'loading calendars…' : nc + ' of ' + gcal.cals.length + ' calendars shown'}</span>`;
+      if (!gcal.cals) loadGcal(todayKey());
       const pick = document.createElement('button'); pick.className = 'link-btn';
       pick.textContent = calPickerOpen ? 'Done' : 'Choose calendars';
       pick.setAttribute('aria-expanded', String(calPickerOpen));
       pick.onclick = () => { calPickerOpen = !calPickerOpen; renderGcalBar(); };
       const off = document.createElement('button'); off.className = 'link-btn'; off.textContent = 'Disconnect';
-      off.onclick = () => { dropGcal(true); calPickerOpen = false; renderTimeline(); };
+      off.onclick = () => { dropGcal(true); calPickerOpen = false; renderGcalBar(); };
       acts.append(pick, off);
       pk.hidden = !calPickerOpen || !gcal.cals;
       if (calPickerOpen && gcal.cals) {
@@ -2384,7 +2473,7 @@ body.fs-on .tabbar { display: none; }
           b.onclick = () => {
             const list = S.settings.gcalHidden = (S.settings.gcalHidden || []).slice();
             const i = list.indexOf(c.id); if (i >= 0) list.splice(i, 1); else list.push(c.id);
-            save(); renderTimeline();
+            save(); renderGcalBar(); if (tab === 'timeline') renderTimeline();
           };
           pk.appendChild(b);
         });
@@ -2392,8 +2481,8 @@ body.fs-on .tabbar { display: none; }
     } else {
       pk.hidden = true;
       const btn = document.createElement('button'); btn.className = 'btn-ghost'; btn.onclick = connectGcal;
-      if (gcalWanted()) { txt.innerHTML = 'Google Calendar <span class="muted">· tap to refresh (Google asks every hour)</span>'; btn.textContent = 'Refresh'; }
-      else { txt.innerHTML = 'See your Google Calendar events here'; btn.textContent = 'Connect'; }
+      if (gcalWanted()) { txt.innerHTML = 'Connected <span class="muted">· Google asks again every hour. Tap Refresh.</span>'; btn.textContent = 'Refresh'; }
+      else { txt.innerHTML = 'Not connected'; btn.textContent = 'Connect'; }
       acts.append(btn);
     }
     bar.append(txt, acts);
@@ -2600,7 +2689,7 @@ body.fs-on .tabbar { display: none; }
   let tlView = 'day';
   try { tlView = localStorage.getItem('burrow.tlView') || 'day'; } catch (e) {}
   function setTlView(v) {
-    tlView = ['inbox', 'day', 'week', 'month'].includes(v) ? v : 'day';
+    tlView = ['day', 'week', 'month'].includes(v) ? v : 'day';
     try { localStorage.setItem('burrow.tlView', tlView); } catch (e) {}
     renderTimeline();
     if (tlView === 'day') requestAnimationFrame(scrollTimeline);
@@ -2610,16 +2699,14 @@ body.fs-on .tabbar { display: none; }
   const visibleEvents = k => gcalLive() ? ((gcal.cache[k] || {}).events || []).filter(ev => !(S.settings.gcalHidden || []).includes(ev.cal)) : [];
   function renderTimeline() {
     document.querySelectorAll('#tlViews button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.v === tlView)));
-    ['inbox', 'day', 'week', 'month'].forEach(v => { $('tl' + v[0].toUpperCase() + v.slice(1) + 'View').hidden = v !== tlView; });
-    const ib = S.inbox.filter(x => !x.done).length; $('inboxCount').textContent = ib ? String(ib) : '';
-    $('tlNavRow').hidden = tlView === 'inbox';
-    $('tlGcal').hidden = tlView === 'inbox';
+    if (tlView === 'inbox') tlView = 'day';
+    ['day', 'week', 'month'].forEach(v => { $('tl' + v[0].toUpperCase() + v.slice(1) + 'View').hidden = v !== tlView; });
     $('aiPlanBtn').hidden = tlView !== 'day';
-    if (tlView !== 'inbox') renderGcalBar();
+    $('gcalRefresh').hidden = !(configured && gcalWanted() && !gcalLive());
+    renderGcalBar();
     if (tlView === 'day') { $('tlDay').textContent = dayLabel(viewDay); renderDayView(); }
     if (tlView === 'week') renderWeek();
     if (tlView === 'month') renderMonth();
-    if (tlView === 'inbox') renderInbox();
   }
   function dayItems(k) {
     const tasks = (S.days[k] || []).map(x => ({ kind: 'task', x, s: x.start ? toMin(x.start) : null }));
@@ -2704,6 +2791,16 @@ body.fs-on .tabbar { display: none; }
     const a = document.createElement('button'); a.className = 'btn-ghost'; a.textContent = 'Add task'; a.onclick = () => openTaskSheet(null, viewDay);
     acts.append(o, a); det.appendChild(acts);
   }
+  let todoSeg = 'day';
+  try { todoSeg = localStorage.getItem('burrow.todoSeg') || 'day'; } catch (e) {}
+  function renderTodoSeg() {
+    document.querySelectorAll('#todoSeg button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === todoSeg)));
+    $('todoInboxView').hidden = todoSeg !== 'inbox';
+    $('todoDayView').hidden = todoSeg === 'inbox';
+    const ib = S.inbox.filter(x => !x.done).length; $('inboxCount').textContent = ib ? String(ib) : '';
+    if (todoSeg === 'inbox') renderInbox();
+  }
+  function refreshInbox() { renderTasks(); renderTodoSeg(); if (tab === 'timeline') renderTimeline(); }
   function renderInbox() {
     const ul = $('inboxList'); ul.innerHTML = '';
     if (!S.inbox.length) { const li = document.createElement('li'); li.className = 'inbox-empty'; li.style.display = 'block'; li.textContent = 'Your inbox is empty. Add tasks above, or use Brain dump to add a bunch at once.'; ul.appendChild(li); }
@@ -2714,7 +2811,7 @@ body.fs-on .tabbar { display: none; }
       chk.innerHTML = '<svg viewBox="0 0 14 14"><path d="M2 7.5l3 3 7-7"/></svg>';
       if (x.done) chk.style.cssText = 'background:var(--leaf);border-color:var(--leaf)';
       chk.querySelector('svg').style.opacity = x.done ? '1' : '0';
-      chk.onclick = () => { x.done = !x.done; if (x.done) onTaskDone(x, 'inbox'); save(); renderTimeline(); renderTasks(); };
+      chk.onclick = () => { x.done = !x.done; if (x.done) onTaskDone(x, 'inbox'); save(); refreshInbox(); };
       const main = document.createElement('button'); main.className = 'task-main';
       const tx = document.createElement('span'); tx.className = 'task-text'; tx.textContent = x.text;
       const meta = document.createElement('span'); meta.className = 'task-seeds';
@@ -2723,10 +2820,10 @@ body.fs-on .tabbar { display: none; }
       li.append(chk, main);
       if (!x.done) {
         const mv = document.createElement('div'); mv.className = 'moves';
-        const mk = (label, day) => { const b = document.createElement('button'); b.textContent = label; b.onclick = () => { moveTask(x, 'inbox', day); save(); renderTimeline(); renderTasks(); toast(`Moved to ${dayLabel(day).toLowerCase()}`); }; return b; };
+        const mk = (label, day) => { const b = document.createElement('button'); b.textContent = label; b.onclick = () => { moveTask(x, 'inbox', day); save(); refreshInbox(); toast(`Moved to ${dayLabel(day).toLowerCase()}`); }; return b; };
         const pick = document.createElement('label'); pick.textContent = 'Pick a day';
         const di = document.createElement('input'); di.type = 'date'; di.min = today; di.setAttribute('aria-label', `Pick a day for ${x.text}`);
-        di.onchange = () => { if (!di.value) return; moveTask(x, 'inbox', di.value); save(); renderTimeline(); renderTasks(); toast(`Moved to ${dayLabel(di.value)}`); };
+        di.onchange = () => { if (!di.value) return; moveTask(x, 'inbox', di.value); save(); refreshInbox(); toast(`Moved to ${dayLabel(di.value)}`); };
         pick.appendChild(di);
         mv.append(mk('Today', today), mk('Tomorrow', shiftKey(today, 1)), pick);
         li.appendChild(mv);
@@ -2736,7 +2833,7 @@ body.fs-on .tabbar { display: none; }
     if (S.inbox.some(x => x.done)) {
       const li = document.createElement('li'); li.style.cssText = 'display:block;background:transparent;box-shadow:none;padding:0';
       const b = document.createElement('button'); b.className = 'link-btn'; b.textContent = 'Clear finished';
-      b.onclick = () => { S.inbox = S.inbox.filter(x => !x.done); save(); renderTimeline(); renderTasks(); };
+      b.onclick = () => { S.inbox = S.inbox.filter(x => !x.done); save(); refreshInbox(); };
       li.appendChild(b); ul.appendChild(li);
     }
   }
@@ -2962,7 +3059,7 @@ Reply with JSON only: {"steps":["..."]}`;
   const TABS = ['focus', 'todos', 'timeline', 'money', 'stats'];
   let tab = 'focus';
   function renderTab() {
-    if (tab === 'todos') { renderTasks(); renderQuests(); }
+    if (tab === 'todos') { renderTasks(); renderTodoSeg(); }
     if (tab === 'timeline') renderTimeline();
     if (tab === 'money') renderMoney();
     if (tab === 'stats') renderProgress();
@@ -2970,7 +3067,7 @@ Reply with JSON only: {"steps":["..."]}`;
   function renderPage() {
     const n = openPageName;
     if (n === 'shop') renderShop();
-    if (n === 'settings') { renderLookPicker(); renderNotify(); }
+    if (n === 'settings') { renderLookPicker(); renderNotify(); renderGcalBar(); }
     renderTab();
   }
   function showTab(name) {
@@ -3042,6 +3139,225 @@ Reply with JSON only: {"steps":["..."]}`;
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => hold.addEventListener(ev, () => { endHold(); pokeUi(); }));
   hold.addEventListener('contextmenu', e => e.preventDefault());
 
+  // ---------- swipe the timer to change its length ----------
+  (function () {
+    const el = $('time'); let y0 = null, m0 = 0, moved = false;
+    const canAdjust = () => !T().running;
+    const curMin = () => Math.round(T().left / 60) || 1;
+    function setMinutes(m) {
+      const t = T(); m = Math.max(1, Math.min(180, m));
+      S.settings[t.mode] = m; t.left = m * 60; renderTimer();
+    }
+    el.addEventListener('pointerdown', e => {
+      if (!canAdjust()) return;
+      y0 = e.clientY; m0 = curMin(); moved = false;
+      try { el.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+    el.addEventListener('pointermove', e => {
+      if (y0 == null) return;
+      const dy = y0 - e.clientY;
+      if (!moved && Math.abs(dy) < 6) return;
+      moved = true; el.classList.add('adjusting');
+      const step = m0 >= 60 ? 5 : 1;
+      const m = m0 + Math.round(dy / 12) * step;
+      if (m !== curMin()) { setMinutes(m); if (navigator.vibrate) try { navigator.vibrate(4); } catch (_) {} }
+    });
+    const end = () => { if (y0 == null) return; y0 = null; el.classList.remove('adjusting'); if (moved) { save(); renderSettings(); $('swipeHint').hidden = true; try { localStorage.setItem('burrow.swiped', '1'); } catch (_) {} } };
+    el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+    el.addEventListener('wheel', e => { if (!canAdjust()) return; e.preventDefault(); setMinutes(curMin() + (e.deltaY < 0 ? 1 : -1)); clearTimeout(el._w); el._w = setTimeout(() => { save(); renderSettings(); }, 400); }, { passive: false });
+    el.addEventListener('keydown', e => { if (!canAdjust()) return; if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); setMinutes(curMin() + (e.key === 'ArrowUp' ? 1 : -1)); save(); } });
+    try { if (localStorage.getItem('burrow.swiped') === '1') $('swipeHint').hidden = true; } catch (_) {}
+  })();
+
+  // ---------- study sounds (made live in the browser, no downloads) ----------
+  const SOUNDS = [
+    ['rain', 'Rain', '<path d="M7 14a4 4 0 0 1 .5-8 5 5 0 0 1 9.5 1.5A3.5 3.5 0 0 1 17 14z"/><path d="M8 17l-1 3M12 17l-1 3M16 17l-1 3"/>'],
+    ['lofi', 'Lofi beats', '<path d="M9 18V6l10-2v12"/><circle cx="7" cy="18" r="2.5"/><circle cx="17" cy="16" r="2.5"/>'],
+    ['typing', 'Typing', '<rect x="3" y="7" width="18" height="11" rx="2"/><path d="M7 11h.01M11 11h.01M15 11h.01M8 15h8"/>'],
+    ['cafe', 'Café', '<path d="M5 9h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16M9 3v3M12 3v3"/>'],
+    ['fire', 'Fireplace', '<path d="M12 21c-4 0-6-2.5-6-5.5 0-3 2-4.5 3-7 1 2 2 2.5 3 2.5 0-3 1-5 3-7 0 4 3 6 3 10.5 0 3.5-2.5 6.5-6 6.5z"/>'],
+    ['waves', 'Ocean', '<path d="M3 10c2 0 2-2 4.5-2S9.5 10 12 10s2.5-2 4.5-2S19 10 21 10M3 15c2 0 2-2 4.5-2s2 2 4.5 2 2.5-2 4.5-2 2.5 2 4.5 2"/>'],
+    ['forest', 'Forest birds', '<path d="M12 3l5 8h-3l4 6H6l4-6H7z"/><path d="M12 17v4"/>'],
+    ['white', 'White noise', '<path d="M3 12h2l2-6 3 12 3-9 2 6 2-3h4"/>'],
+    ['brown', 'Brown noise', '<path d="M3 13c3 0 3-4 6-4s3 6 6 6 3-4 6-4"/>']
+  ];
+  const snd = { ctx: null, master: null, nodes: {}, buffers: {}, playing: false };
+  function sctx() {
+    ensureAudio();
+    if (!actx) return null;
+    if (!snd.master) { snd.master = actx.createGain(); snd.master.gain.value = S.settings.soundVol ?? 0.7; snd.master.connect(actx.destination); }
+    return actx;
+  }
+  function noiseBuf(kind) {
+    if (snd.buffers[kind]) return snd.buffers[kind];
+    const c = actx, len = c.sampleRate * 4, b = c.createBuffer(2, len, c.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = b.getChannelData(ch); let l = 0, b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < len; i++) {
+        const w = Math.random() * 2 - 1;
+        if (kind === 'white') d[i] = w * 0.5;
+        else if (kind === 'brown') { l = (l + 0.02 * w) / 1.02; d[i] = l * 3.5; }
+        else { b0 = .99886 * b0 + w * .0555179; b1 = .99332 * b1 + w * .0750759; b2 = .969 * b2 + w * .153852; b3 = .8665 * b3 + w * .3104856; b4 = .55 * b4 + w * .5329522; b5 = -.7616 * b5 - w * .016898; d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * .5362) * .11; b6 = w * .115926; }
+      }
+    }
+    return (snd.buffers[kind] = b);
+  }
+  function loopNoise(kind, out, filters = []) {
+    const src = actx.createBufferSource(); src.buffer = noiseBuf(kind); src.loop = true;
+    src.loopStart = Math.random(); let node = src;
+    filters.forEach(([type, f, q]) => { const fl = actx.createBiquadFilter(); fl.type = type; fl.frequency.value = f; if (q) fl.Q.value = q; node.connect(fl); node = fl; });
+    node.connect(out); src.start(0, Math.random() * 3); return src;
+  }
+  function burst(out, t, { dur = 0.02, f = 3000, q = 1, type = 'bandpass', gain = 0.3, kind = 'white' } = {}) {
+    const src = actx.createBufferSource(); src.buffer = noiseBuf(kind);
+    const fl = actx.createBiquadFilter(); fl.type = type; fl.frequency.value = f; fl.Q.value = q;
+    const g = actx.createGain(); g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(fl).connect(g).connect(out); src.start(t, Math.random() * 3, dur + 0.05);
+  }
+  function tone(out, t, { f = 440, dur = 0.3, gain = 0.1, type = 'sine', attack = 0.005, f2 = null } = {}) {
+    const o = actx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    const g = actx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(gain, t + attack); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(out); o.start(t); o.stop(t + dur + 0.05);
+  }
+  function scheduler(fn, every = 60) { let next = actx.currentTime + 0.05; const id = setInterval(() => { while (next < actx.currentTime + 0.4) next = fn(next); }, every); return () => clearInterval(id); }
+  const MAKERS = {
+    white: out => { const s = loopNoise('white', out, [['lowpass', 9000]]); return () => s.stop(); },
+    brown: out => { const s = loopNoise('brown', out, [['lowpass', 900]]); return () => s.stop(); },
+    rain: out => {
+      const g = actx.createGain(); g.gain.value = 0.9; g.connect(out);
+      const s = loopNoise('pink', g, [['highpass', 300], ['lowpass', 7000]]);
+      const stop = scheduler(t => { burst(out, t, { dur: 0.015 + Math.random() * 0.03, f: 1800 + Math.random() * 4000, q: 2, gain: 0.05 + Math.random() * 0.12 }); return t + 0.02 + Math.random() * 0.09; });
+      return () => { s.stop(); stop(); };
+    },
+    waves: out => {
+      const g = actx.createGain(); g.gain.value = 0.2; g.connect(out);
+      const fl = actx.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = 500; fl.connect(g);
+      const s = loopNoise('brown', fl);
+      const lfo = actx.createOscillator(); lfo.frequency.value = 0.09; const lg = actx.createGain(); lg.gain.value = 0.55; lfo.connect(lg).connect(g.gain);
+      const lf2 = actx.createGain(); lf2.gain.value = 420; lfo.connect(lf2).connect(fl.frequency); lfo.start();
+      g.gain.value = 0.6;
+      return () => { s.stop(); lfo.stop(); };
+    },
+    fire: out => {
+      const s = loopNoise('brown', out, [['lowpass', 500]]);
+      const stop = scheduler(t => { const n = Math.random() < 0.3 ? 3 : 1; for (let i = 0; i < n; i++) burst(out, t + i * 0.012, { dur: 0.006 + Math.random() * 0.02, f: 1500 + Math.random() * 3500, q: 0.8, type: 'highpass', gain: 0.1 + Math.random() * 0.35 }); return t + 0.06 + Math.random() * 0.45; });
+      return () => { s.stop(); stop(); };
+    },
+    typing: out => {
+      let inBurst = 0;
+      const stop = scheduler(t => {
+        if (inBurst <= 0) { inBurst = 8 + Math.floor(Math.random() * 30); return t + 0.4 + Math.random() * 1.6; }
+        inBurst--;
+        const space = Math.random() < 0.15;
+        burst(out, t, { dur: 0.018, f: space ? 1200 : 2500 + Math.random() * 1500, q: 1.5, gain: space ? 0.25 : 0.18 + Math.random() * 0.1 });
+        tone(out, t, { f: space ? 110 : 160 + Math.random() * 60, dur: 0.04, gain: space ? 0.12 : 0.06 });
+        burst(out, t + 0.05 + Math.random() * 0.02, { dur: 0.012, f: 3200, q: 2, gain: 0.05 });
+        return t + 0.07 + Math.random() * 0.13;
+      });
+      return stop;
+    },
+    cafe: out => {
+      const g = actx.createGain(); g.gain.value = 0.55; g.connect(out);
+      const s = loopNoise('pink', g, [['bandpass', 700, 0.6], ['lowpass', 2200]]);
+      const lfo = actx.createOscillator(); lfo.frequency.value = 0.31; const lg = actx.createGain(); lg.gain.value = 0.15; lfo.connect(lg).connect(g.gain); lfo.start();
+      const stop = scheduler(t => { if (Math.random() < 0.5) tone(out, t, { f: 2200 + Math.random() * 1800, dur: 0.25 + Math.random() * 0.3, gain: 0.025 + Math.random() * 0.03, type: 'sine' }); else burst(out, t, { dur: 0.05, f: 900, q: 3, gain: 0.04 }); return t + 0.8 + Math.random() * 3; });
+      return () => { s.stop(); lfo.stop(); stop(); };
+    },
+    forest: out => {
+      const g = actx.createGain(); g.gain.value = 0.35; g.connect(out);
+      const s = loopNoise('pink', g, [['bandpass', 500, 0.4]]);
+      const lfo = actx.createOscillator(); lfo.frequency.value = 0.05; const lg = actx.createGain(); lg.gain.value = 0.2; lfo.connect(lg).connect(g.gain); lfo.start();
+      const stop = scheduler(t => {
+        const base = 2500 + Math.random() * 2500, n = 2 + Math.floor(Math.random() * 5);
+        for (let i = 0; i < n; i++) tone(out, t + i * 0.11, { f: base * (1 + Math.random() * 0.2), f2: base * (0.7 + Math.random() * 0.6), dur: 0.07 + Math.random() * 0.05, gain: 0.03 + Math.random() * 0.03 });
+        return t + 1.2 + Math.random() * 4;
+      });
+      return () => { s.stop(); lfo.stop(); stop(); };
+    },
+    lofi: out => {
+      const bus = actx.createGain(); bus.gain.value = 0.9;
+      const warm = actx.createBiquadFilter(); warm.type = 'lowpass'; warm.frequency.value = 3200; bus.connect(warm).connect(out);
+      const hissGain = actx.createGain(); hissGain.gain.value = 0.12; hissGain.connect(out);
+      const hiss = loopNoise('pink', hissGain, [['highpass', 4000]]);
+      const bpm = 74, beat = 60 / bpm, swing = 0.06;
+      const CH = [[53, 57, 60, 64], [52, 55, 59, 62], [50, 53, 57, 60], [48, 52, 55, 59]]; // Fmaj7 Em7 Dm7 Cmaj7
+      const mf = n => 440 * Math.pow(2, (n - 69) / 12);
+      let step = 0;
+      const stop = scheduler(t => {
+        const bar = Math.floor(step / 8) % CH.length, s8 = step % 8;
+        if (s8 === 0) {
+          CH[bar].forEach((n, i) => { tone(bus, t + i * 0.012, { f: mf(n), dur: beat * 3.8, gain: 0.035, type: 'triangle', attack: 0.06 }); tone(bus, t + i * 0.012, { f: mf(n) * 2.001, dur: beat * 2, gain: 0.008, attack: 0.05 }); });
+          tone(bus, t, { f: mf(CH[bar][0] - 12), dur: beat * 1.8, gain: 0.12, attack: 0.02 });
+        }
+        if (s8 === 4) tone(bus, t, { f: mf(CH[bar][0] - 12 + (Math.random() < 0.5 ? 7 : 0)), dur: beat * 1.6, gain: 0.1, attack: 0.02 });
+        if (s8 === 0 || s8 === 5) tone(bus, t, { f: 110, f2: 42, dur: 0.32, gain: 0.5, attack: 0.002 });
+        if (s8 === 2 || s8 === 6) { burst(bus, t, { dur: 0.14, f: 1800, q: 0.7, gain: 0.22 }); tone(bus, t, { f: 190, f2: 150, dur: 0.1, gain: 0.08 }); }
+        burst(bus, t + (s8 % 2 ? swing : 0), { dur: 0.03, f: 8000, q: 0.6, type: 'highpass', gain: s8 % 2 ? 0.04 : 0.07 });
+        if (Math.random() < 0.2) burst(out, t + Math.random() * beat / 2, { dur: 0.004, f: 3000, q: 0.5, type: 'highpass', gain: 0.06 });
+        step++;
+        return t + beat / 2;
+      });
+      return () => { stop(); hiss.stop(); };
+    }
+  };
+  function soundMix() { return S.settings.sounds || (S.settings.sounds = {}); }
+  function startSound(id) {
+    if (snd.nodes[id] || !sctx()) return;
+    const g = actx.createGain(); g.gain.value = 0; g.connect(snd.master);
+    const vol = soundMix()[id] ?? 0.6;
+    g.gain.linearRampToValueAtTime(vol * (id === 'white' ? 0.35 : id === 'brown' ? 0.6 : 1), actx.currentTime + 1.2);
+    let stop = () => {};
+    try { stop = MAKERS[id](g); } catch (e) {}
+    snd.nodes[id] = { g, stop };
+  }
+  function stopSound(id) {
+    const n = snd.nodes[id]; if (!n) return; delete snd.nodes[id];
+    try { n.g.gain.cancelScheduledValues(actx.currentTime); n.g.gain.setValueAtTime(n.g.gain.value, actx.currentTime); n.g.gain.linearRampToValueAtTime(0, actx.currentTime + 0.6); } catch (e) {}
+    setTimeout(() => { try { n.stop(); n.g.disconnect(); } catch (e) {} }, 700);
+  }
+  function soundsPlay(on) {
+    snd.playing = on && Object.keys(soundMix()).length > 0;
+    const mix = soundMix();
+    Object.keys(snd.nodes).forEach(id => { if (!snd.playing || !(id in mix)) stopSound(id); });
+    if (snd.playing) Object.keys(mix).forEach(startSound);
+    $('soundBtn').classList.toggle('playing', snd.playing);
+    if ($('soundSheet').open) renderSoundSheet();
+  }
+  function syncSoundsToTimer() {
+    if (!S.settings.soundAuto) return;
+    const t = T(); soundsPlay(t.running && t.mode === 'focus');
+  }
+  function renderSoundSheet() {
+    const grid = $('sndGrid'); grid.innerHTML = ''; const mix = soundMix();
+    SOUNDS.forEach(([id, name, icon]) => {
+      const on = id in mix;
+      const box = document.createElement('div'); box.className = 'snd' + (on ? ' on' : '');
+      const b = document.createElement('button'); b.setAttribute('aria-pressed', String(on));
+      b.innerHTML = `<svg viewBox="0 0 24 24">${icon}</svg><span></span>`; b.querySelector('span').textContent = name;
+      b.onclick = () => {
+        ensureAudio();
+        if (on) { delete mix[id]; stopSound(id); } else { mix[id] = 0.6; if (snd.playing || !S.settings.soundAuto || (T().running && T().mode === 'focus')) { snd.playing = true; startSound(id); $('soundBtn').classList.add('playing'); } }
+        if (!Object.keys(mix).length) soundsPlay(false);
+        save(); renderSoundSheet();
+      };
+      const r = document.createElement('input'); r.type = 'range'; r.min = 0; r.max = 1; r.step = 0.01; r.value = mix[id] ?? 0.6; r.setAttribute('aria-label', `${name} volume`);
+      r.oninput = () => { mix[id] = Number(r.value); const n = snd.nodes[id]; if (n && actx) n.g.gain.setTargetAtTime(mix[id] * (id === 'white' ? 0.35 : id === 'brown' ? 0.6 : 1), actx.currentTime, 0.05); };
+      r.onchange = () => save();
+      box.append(b, r); grid.appendChild(box);
+    });
+    $('sndMaster').value = S.settings.soundVol ?? 0.7;
+    $('sndAuto').checked = !!S.settings.soundAuto;
+    $('sndPlay').textContent = snd.playing ? 'Stop' : 'Play';
+    $('sndPlay').disabled = !Object.keys(mix).length;
+  }
+  $('soundBtn').onclick = e => { e.stopPropagation(); renderSoundSheet(); try { $('soundSheet').showModal(); } catch (err) { $('soundSheet').setAttribute('open', ''); } };
+  $('sndClose').onclick = () => $('soundSheet').close();
+  $('sndMaster').addEventListener('input', e => { S.settings.soundVol = Number(e.target.value); if (snd.master && actx) snd.master.gain.setTargetAtTime(S.settings.soundVol, actx.currentTime, 0.05); });
+  $('sndMaster').addEventListener('change', () => save());
+  $('sndAuto').addEventListener('change', e => { S.settings.soundAuto = e.target.checked; save(); if (e.target.checked) syncSoundsToTimer(); });
+  $('sndPlay').onclick = () => { ensureAudio(); soundsPlay(!snd.playing); };
+  $('sndNone').onclick = () => { S.settings.sounds = {}; soundsPlay(false); save(); renderSoundSheet(); };
+
   // ---------- events ----------
   document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); openPage(b.dataset.open); }));
   document.querySelectorAll('[data-close]').forEach(b => b.onclick = closePage);
@@ -3059,15 +3375,17 @@ Reply with JSON only: {"steps":["..."]}`;
   $('tlPrev').onclick = () => goDay(step(-1));
   $('tlNext').onclick = () => goDay(step(1));
   $('tlDay').onclick = () => goDay(todayKey());
-  $('tlAdd').onclick = () => openTaskSheet(null, tlView === 'inbox' ? 'inbox' : viewDay);
+  $('tlAdd').onclick = () => openTaskSheet(null, viewDay);
+  $('gcalRefresh').onclick = connectGcal;
+  document.querySelectorAll('#todoSeg button').forEach(b => b.onclick = () => { todoSeg = b.dataset.t; try { localStorage.setItem('burrow.todoSeg', todoSeg); } catch (e) {} renderTodoSeg(); });
   document.querySelectorAll('#tlViews button').forEach(b => b.onclick = () => setTlView(b.dataset.v));
   document.querySelectorAll('#shopSeg button').forEach(b => b.onclick = () => { shopSeg = b.dataset.s; renderShop(); });
-  $('todoInboxLink').onclick = () => { showTab('timeline'); setTlView('inbox'); };
+  $('todoInboxLink').onclick = () => { todoSeg = 'inbox'; renderTodoSeg(); };
   $('inboxForm').addEventListener('submit', e => {
     e.preventDefault();
     const v = $('inboxNew').value.trim(); if (!v) { $('inboxNew').focus(); return; }
     const x = { id: uid(), text: v, mins: Number(S.settings.focus) || 25, start: null, est: 1, pomos: 0, spent: 0, done: false, subs: [] };
-    S.inbox.push(x); $('inboxNew').value = ''; save(); renderTimeline(); renderTasks();
+    S.inbox.push(x); $('inboxNew').value = ''; save(); refreshInbox();
   });
   $('aiPlanBtn').onclick = aiPlanDay;
   $('aiSortBtn').onclick = aiSortInbox;
