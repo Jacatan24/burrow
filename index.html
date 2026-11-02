@@ -613,6 +613,66 @@ body.fs-on .tabbar { display: none; }
   width: 56px; height: 56px; border-radius: 50%; border: 0; background: var(--timer-ink); color: var(--accent-ink); font-size: 2rem; line-height: 1; box-shadow: 0 8px 18px -8px rgba(0,0,0,.45); }
 .page.tab .money-total { font-size: 3rem; }
 .page.tab .stat:last-child:nth-child(odd) { grid-column: 1 / -1; }
+/* segments, inbox, week, month, ai */
+.seg { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); width: 100%; max-width: 420px; }
+.seg button { flex: 1; border: 0; background: transparent; border-radius: 999px; padding: 8px 6px; font-family: var(--font-hand); font-size: 1.12rem; color: var(--muted); display: inline-flex; justify-content: center; align-items: center; gap: 5px; }
+.seg button[aria-selected="true"] { background: var(--timer-ink); color: var(--accent-ink); }
+.badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: var(--accent-ink); font-family: var(--font-body); font-size: .7rem; font-weight: 800; display: inline-grid; place-items: center; }
+.badge:empty { display: none; }
+.seg button[aria-selected="true"] .badge { background: var(--accent-ink); color: var(--timer-ink); }
+.tl-card { display: grid; gap: 14px; }
+.tl-view { display: grid; gap: 12px; }
+.tl-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.ai-btn { border: 1.5px dashed var(--timer-ink); background: transparent; color: var(--timer-ink); border-radius: 999px; padding: 7px 14px; font-weight: 800; font-size: .88rem; }
+.ai-btn.small { padding: 3px 10px; font-size: .78rem; text-transform: none; letter-spacing: 0; }
+.ai-btn:disabled { opacity: .5; }
+.field-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.inbox-add { display: flex; gap: 8px; }
+.inbox-add input { flex: 1 1 auto; min-width: 0; border: 1px solid var(--line); background: var(--surface); border-radius: 14px; padding: 12px 14px; font-weight: 600; color: var(--ink); }
+.inbox-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.inbox { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.inbox li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 10px; align-items: center; padding: 10px 12px; border-radius: 16px; background: var(--surface); box-shadow: 0 1px 0 var(--line); }
+.inbox li.done .task-text { text-decoration: line-through; color: var(--muted); }
+.inbox .moves { grid-column: 2; display: flex; gap: 6px; flex-wrap: wrap; }
+.inbox .moves button, .inbox .moves label { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 4px 11px; font-weight: 800; font-size: .8rem; color: var(--ink); position: relative; overflow: hidden; cursor: pointer; }
+.inbox .moves label input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+.inbox-empty { text-align: center; color: var(--muted); font-weight: 600; padding: 18px 8px; }
+.inbox-link { border: 0; background: transparent; color: var(--accent); font-weight: 800; padding: 4px 0; justify-self: start; text-align: left; }
+.wk { display: grid; gap: 10px; }
+.wk-day { display: grid; gap: 6px; padding: 10px 12px; border-radius: 16px; background: var(--surface); box-shadow: 0 1px 0 var(--line); }
+.wk-day.today { box-shadow: inset 0 0 0 2px var(--timer-ink); }
+.wk-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; border: 0; background: transparent; padding: 0; text-align: left; color: var(--ink); width: 100%; }
+.wk-head b { font-family: var(--font-hand); font-weight: 400; font-size: 1.3rem; }
+.wk-head span { font-size: .78rem; font-weight: 800; color: var(--muted); }
+.wk-item { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 8px; align-items: center; border: 0; background: transparent; padding: 3px 0; text-align: left; color: var(--ink); width: 100%; font-size: .9rem; }
+.wk-item .t { font-size: .76rem; font-weight: 800; color: var(--muted); font-variant-numeric: tabular-nums; }
+.wk-item .n { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.wk-item .n i { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--timer-ink); }
+.wk-item.ev .n { font-weight: 600; color: var(--muted); }
+.wk-item.ev .n i { border-radius: 2px; }
+.wk-item.done .n { text-decoration: line-through; color: var(--muted); }
+.wk-item.done .n i { background: var(--leaf); }
+.wk-item .d { font-size: .75rem; font-weight: 700; color: var(--muted); }
+.wk-empty { display: flex; justify-content: space-between; align-items: center; font-size: .85rem; color: var(--muted); font-weight: 600; }
+.mo { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.mo-day { min-height: 54px; min-width: 0; border: 0; border-radius: 10px; background: var(--surface); display: grid; align-content: start; justify-items: start; gap: 4px; padding: 5px; font-weight: 800; font-size: .78rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+.mo-day.out { opacity: .35; }
+.mo-day.today { box-shadow: inset 0 0 0 2px var(--timer-ink); }
+.mo-day.sel { background: var(--ink); color: var(--bg); }
+.mo-dots { display: flex; flex-wrap: wrap; gap: 2px; }
+.mo-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--timer-ink); }
+.mo-dots i.done { background: var(--leaf); }
+.mo-dots i.ev { border-radius: 1px; }
+.mo-detail { display: grid; gap: 4px; padding: 12px 14px; border-radius: 16px; background: var(--surface); }
+.mo-detail .cal-dtitle { margin-bottom: 4px; }
+.mo-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.ai-status { font-weight: 700; color: var(--muted); min-height: 1.2em; }
+.ai-summary { margin: 0; font-weight: 600; line-height: 1.45; }
+#aiDump { border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); padding: 12px; font: inherit; font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--ink); resize: vertical; min-height: 120px; }
+.imp-list .sub2 { display: block; font-size: .8rem; color: var(--muted); font-weight: 600; }
+#page-shop[data-seg="quests"] .shop-only, #page-shop:not([data-seg="quests"]) .quests-only { display: none !important; }
+#page-shop .seg { margin: 0 auto; }
+.corner-link.has-dot::after { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-left: 4px; vertical-align: super; }
 /* look settings */
 .look { display: grid; gap: 12px; }
 .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
@@ -1012,10 +1072,7 @@ body.fs-on .tabbar { display: none; }
       <div id="carry"></div>
       <ul class="tasks" id="tasks"></ul>
       <div id="sampleNote"></div>
-    </section>
-    <section class="card pad quests" id="questsCard" aria-label="Daily quests">
-      <div class="plan-title"><h2>Daily quests</h2><span class="tally" id="questTally"></span></div>
-      <ul class="qlist" id="qlist"></ul>
+      <button class="inbox-link" id="todoInboxLink" hidden></button>
     </section>
   </div>
 </section>
@@ -1024,22 +1081,38 @@ body.fs-on .tabbar { display: none; }
 <section class="page tab" id="page-timeline" hidden aria-labelledby="ttl-timeline">
   <div class="tab-head"><h1 id="ttl-timeline"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="21" r="14" fill="var(--surface)" stroke="var(--paper-ink)" stroke-width="1.8"/><path d="M20 12v9l6 4" fill="none" stroke="var(--timer-ink)" stroke-width="2.4" stroke-linecap="round"/><circle cx="20" cy="21" r="1.8" fill="var(--paper-ink)"/></svg><span>Timeline</span></h1></div>
   <div class="page-body">
-    <section class="card pad tl-card">
-      <div class="plan-title">
-        <h2 id="tlTitle">Your day</h2>
-        <nav class="day-nav" aria-label="Choose day">
-          <button class="arrow" id="tlPrev" aria-label="Previous day">‹</button>
-          <button id="tlDay">Today</button>
-          <button class="arrow" id="tlNext" aria-label="Next day">›</button>
-        </nav>
+    <section class="card pad tl-card" id="tlCard">
+      <div class="seg" id="tlViews" role="tablist" aria-label="Timeline view">
+        <button data-v="inbox" role="tab">Inbox<span class="badge" id="inboxCount"></span></button>
+        <button data-v="day" role="tab">Day</button>
+        <button data-v="week" role="tab">Week</button>
+        <button data-v="month" role="tab">Month</button>
       </div>
-      <div class="tally" id="tlSummary"></div>
-      <div class="gcal-bar" id="gcalBar"></div>
-      <div class="gcal-cals" id="gcalCals" hidden></div>
-      <div class="allday" id="tlAllDay"></div>
-      <div class="unsched" id="tlUnsched"></div>
-      <div class="tl-scroll" id="tlScroll"><div class="tl" id="tl"></div></div>
-      <p class="muted tl-hint">Tap an empty spot to add a task at that time.</p>
+      <h2 id="tlTitle" hidden></h2>
+      <div class="tl-nav" id="tlNavRow">
+        <nav class="day-nav" aria-label="Choose date">
+          <button class="arrow" id="tlPrev" aria-label="Previous">‹</button>
+          <button id="tlDay">Today</button>
+          <button class="arrow" id="tlNext" aria-label="Next">›</button>
+        </nav>
+        <button class="ai-btn" id="aiPlanBtn" hidden>✦ Plan my day</button>
+      </div>
+      <div id="tlGcal"><div class="gcal-bar" id="gcalBar"></div><div class="gcal-cals" id="gcalCals" hidden></div></div>
+      <div class="tl-view" id="tlDayView">
+        <div class="tally" id="tlSummary"></div>
+        <div class="allday" id="tlAllDay"></div>
+        <div class="unsched" id="tlUnsched"></div>
+        <div class="tl-scroll" id="tlScroll"><div class="tl" id="tl"></div></div>
+        <p class="muted tl-hint">Tap an empty spot to add a task at that time.</p>
+      </div>
+      <div class="tl-view" id="tlWeekView" hidden><div class="tally" id="wkSummary"></div><div class="wk" id="wkList"></div></div>
+      <div class="tl-view" id="tlMonthView" hidden><div class="cal-dow" id="moDow"></div><div class="mo" id="moGrid"></div><div class="mo-detail" id="moDetail"></div></div>
+      <div class="tl-view" id="tlInboxView" hidden>
+        <p class="muted" style="margin:0">Tasks without a day. Drop anything here, then move it to a day when you're ready.</p>
+        <form class="inbox-add" id="inboxForm" autocomplete="off"><input type="text" id="inboxNew" placeholder="Add to inbox…" maxlength="120" aria-label="New inbox task"><button class="btn-dark" type="submit">Add</button></form>
+        <div class="inbox-tools"><button class="ai-btn" id="aiSortBtn">✦ Sort with AI</button><button class="ai-btn" id="aiDumpBtn">✦ Brain dump</button></div>
+        <ul class="inbox" id="inboxList"></ul>
+      </div>
       <button class="fab" id="tlAdd" aria-label="Add a task">+</button>
     </section>
   </div>
@@ -1049,17 +1122,29 @@ body.fs-on .tabbar { display: none; }
 <section class="page" id="page-shop" hidden aria-labelledby="ttl-shop">
   <div class="page-head"><button class="corner-link" data-close>Close</button><h1 id="ttl-shop">Shop</h1><span></span></div>
   <div class="page-body">
-    <section class="card preview-card">
+    <div class="seg" id="shopSeg" role="tablist" aria-label="Shop sections">
+      <button data-s="items" role="tab">Shop</button>
+      <button data-s="quests" role="tab">Quests<span class="badge" id="questBadge"></span></button>
+    </div>
+    <section class="card preview-card shop-only">
       <div id="previewHost"></div>
       <div class="preview-info">
         <div class="balance" id="balance"></div>
         <div class="muted">Earn seeds from focus sessions, finished tasks, full rounds, daily quests and achievements.</div>
       </div>
     </section>
-    <section class="card pad shop-section">
+    <section class="card pad shop-section shop-only">
       <div class="chips" id="shopCats" role="group" aria-label="Shop categories"></div>
       <div class="action-bar" id="actionBar"></div>
       <div class="items" id="shopItems"></div>
+    </section>
+    <section class="card pad quests quests-only" id="questsCard" aria-label="Daily quests">
+      <div class="plan-title"><h2>Daily quests</h2><span class="tally" id="questTally"></span></div>
+      <ul class="qlist" id="qlist"></ul>
+    </section>
+    <section class="card pad quests-only" style="display:grid;gap:14px">
+      <h3 id="achCount">Achievements</h3>
+      <div class="achs" id="achs"></div>
     </section>
   </div>
 </section>
@@ -1086,10 +1171,6 @@ body.fs-on .tabbar { display: none; }
     <section class="card pad" style="display:grid;gap:14px">
       <h3>Last 7 days · focus sessions</h3>
       <div class="week" id="week"></div>
-    </section>
-    <section class="card pad" style="display:grid;gap:14px">
-      <h3 id="achCount">Achievements</h3>
-      <div class="achs" id="achs"></div>
     </section>
   </div>
 </section>
@@ -1133,6 +1214,15 @@ body.fs-on .tabbar { display: none; }
       <div><h2>Account</h2><div class="muted">Sign in to sync your tasks, seeds and unlocks between devices.</div></div>
       <button class="sync-chip" id="syncChip" data-state="local"><span class="dot"></span><span class="lbl" id="syncLbl">Sign in</span></button>
     </section>
+    <section class="card pad settings" id="notifyCard">
+      <h2>Notifications</h2>
+      <p class="muted" id="notifyStatus" style="margin:0 0 10px"></p>
+      <button class="btn-accent" id="notifyBtn" style="margin-bottom:12px">Turn on notifications</button>
+      <div class="set-grid">
+        <label for="setNotifyLead">Task reminders<select id="setNotifyLead"><option value="-1">Off</option><option value="0">At start time</option><option value="5">5 min before</option><option value="10">10 min before</option><option value="15">15 min before</option><option value="30">30 min before</option></select></label>
+      </div>
+      <div class="toggles"><label for="setNotifyTimer">When a focus session or break ends <input type="checkbox" id="setNotifyTimer"></label></div>
+    </section>
     <section class="card pad look">
       <h2>Look</h2>
       <h3>Colours</h3>
@@ -1171,10 +1261,13 @@ body.fs-on .tabbar { display: none; }
       </div>
       <label class="inline-num" for="tsMins"><input type="number" id="tsMins" min="5" max="600" step="5"> minutes</label>
     </div>
+    <div class="field"><label for="tsDate">Day</label>
+      <div class="row-inline"><input type="date" id="tsDate"><button type="button" class="link-btn" id="tsToInbox">Move to inbox</button></div>
+    </div>
     <div class="field"><label for="tsStart">Start time</label>
       <div class="row-inline"><input type="time" id="tsStart"><button type="button" class="link-btn" id="tsClearTime">No set time</button></div>
     </div>
-    <div class="field"><span>Steps</span>
+    <div class="field"><div class="field-row"><span>Steps</span><button type="button" class="ai-btn small" id="tsAiSteps">✦ Break it down</button></div>
       <ul class="subs" id="tsSubs"></ul>
       <div class="sub-add"><input type="text" id="tsSubNew" placeholder="Add a step…" maxlength="120" aria-label="New step"><button type="button" class="btn-ghost" id="tsSubAdd">Add</button></div>
     </div>
@@ -1223,6 +1316,17 @@ body.fs-on .tabbar { display: none; }
     <input type="file" id="rcptInput2" accept="image/*" class="vh" tabindex="-1">
     <div class="exp-foot"><button type="submit" class="btn-accent exp-save" id="expSave">Save receipt</button></div>
   </form>
+</dialog>
+
+<dialog class="sheet" id="aiSheet" aria-labelledby="aiTitle">
+  <div class="sheet-body">
+    <div class="sheet-top"><h2 id="aiTitle">AI helper</h2><button type="button" class="sheet-close" id="aiClose" aria-label="Close">×</button></div>
+    <label class="field" for="aiDump" id="aiInputWrap" hidden>What do you need to get done?<textarea id="aiDump" rows="6" placeholder="e.g. finish 4640 lab by thursday, gym tomorrow morning, call mom, study data mining ch 5 for 2 hours"></textarea></label>
+    <div class="ai-status" id="aiStatus"></div>
+    <p class="ai-summary" id="aiSummary" hidden></p>
+    <ul class="imp-list" id="aiList"></ul>
+    <div class="row2"><button type="button" class="btn-accent" id="aiGo">Apply</button><button type="button" class="btn-ghost" id="aiCancel">Cancel</button></div>
+  </div>
 </dialog>
 
 <nav class="tabbar" id="tabbar" aria-label="Sections">
@@ -1342,7 +1446,7 @@ body.fs-on .tabbar { display: none; }
     const t = todayKey();
     return {
       v: 2, updatedAt: 0,
-      settings: { focus: 25, short: 5, long: 15, every: 4, goal: 6, autoBreak: true, autoFocus: false, sound: true, wake: true, theme: 'auto', palette: 'berry', fontTheme: 'cozy', currency: 'CAD', budget: 0, gcalHidden: [], gcalKnown: [] },
+      settings: { focus: 25, short: 5, long: 15, every: 4, goal: 6, autoBreak: true, autoFocus: false, sound: true, wake: true, theme: 'auto', palette: 'berry', fontTheme: 'cozy', currency: 'CAD', budget: 0, gcalHidden: [], gcalKnown: [], notifyTimer: true, notifyLead: 5 },
       days: { [t]: [
         { id: uid(), text: 'Review lecture notes', mins: 50, start: '09:30', est: 2, pomos: 1, spent: 25, done: false, sample: true },
         { id: uid(), text: 'Finish lab exercises', mins: 75, start: '13:00', est: 3, pomos: 0, spent: 0, done: false, sample: true },
@@ -1365,6 +1469,8 @@ body.fs-on .tabbar { display: none; }
     s.look = Object.assign({}, DEFAULT_LOOK, s.look || {});
     for (const k in s.days) (s.days[k] || []).forEach(x => { if (!x.mins) x.mins = (x.est || 1) * (s.settings.focus || 25); if (x.spent == null) x.spent = (x.pomos || 0) * (s.settings.focus || 25); if (x.start === undefined) x.start = null; });
     s.expenses = Array.isArray(s.expenses) ? s.expenses : [];
+    s.inbox = Array.isArray(s.inbox) ? s.inbox : [];
+    s.inbox.forEach(x => { if (!x.mins) x.mins = s.settings.focus || 25; if (x.spent == null) x.spent = 0; if (x.pomos == null) x.pomos = 0; x.subs = x.subs || []; });
     s.dayStats = s.dayStats || {}; s.quests = s.quests || {}; s.lastVisit = s.lastVisit || null;
     s.stats = Object.assign({ sessions: 0, tasksDone: 0, byDay: {}, bestStreak: 0 }, s.stats || {});
     s.stats.byDay = s.stats.byDay || {};
@@ -1394,7 +1500,7 @@ body.fs-on .tabbar { display: none; }
     appId: "1:59335476864:web:aed85986ff87abfbf80865",
     measurementId: "G-Z89144NVWH"
   };
-  const FB = 'https://www.gstatic.com/firebasejs/10.12.2/';
+  const FB = 'https://www.gstatic.com/firebasejs/12.14.0/';
   const configured = !String(FIREBASE_CONFIG.apiKey).startsWith('PASTE');
   let fb = null, authUser = null, ref = null, unsub = null, pushTimer = null, writing = Promise.resolve(), gotServer = false;
   function setSync(state, label) { $('syncChip').dataset.state = state; $('syncLbl').textContent = label; }
@@ -1437,7 +1543,7 @@ body.fs-on .tabbar { display: none; }
       ]);
       const fapp = app.initializeApp(FIREBASE_CONFIG);
       const a = auth.getAuth(fapp);
-      fb = { auth: a, A: auth, db: store.getFirestore(fapp), doc: store.doc, onSnapshot: store.onSnapshot, setDoc: store.setDoc, getDoc: store.getDoc, deleteDoc: store.deleteDoc };
+      fb = { app: fapp, auth: a, A: auth, db: store.getFirestore(fapp), doc: store.doc, onSnapshot: store.onSnapshot, setDoc: store.setDoc, getDoc: store.getDoc, deleteDoc: store.deleteDoc };
       auth.getRedirectResult(a).then(res => {
         let pending = false; try { pending = sessionStorage.getItem('burrow.gcalPending') === '1'; sessionStorage.removeItem('burrow.gcalPending'); } catch (e) {}
         if (res && pending) { const c = auth.GoogleAuthProvider.credentialFromResult(res); if (c && c.accessToken) { storeGcalToken(c.accessToken); toast('Google Calendar connected'); } }
@@ -1614,7 +1720,14 @@ body.fs-on .tabbar { display: none; }
   function start() { const t = T(); if (t.running) return; t.endsAt = Date.now() + t.left * 1000; t.running = true; save(); renderTimer(); syncWake(); }
   function pause() { const t = T(); if (!t.running) return; t.left = leftNow(); t.running = false; save(); renderTimer(); syncWake(); }
   function setMode(m) { const t = T(); t.mode = m; t.running = false; t.left = modeLen(m); }
-  const findTask = (id, day) => (S.days[day] || []).find(x => x.id === id);
+  const listOf = day => day === 'inbox' ? S.inbox : (S.days[day] = S.days[day] || []);
+  const findTask = (id, day) => (day === 'inbox' ? S.inbox : (S.days[day] || [])).find(x => x.id === id);
+  function moveTask(x, from, to) {
+    if (from === to) return;
+    const src = listOf(from), i = src.indexOf(x); if (i >= 0) src.splice(i, 1);
+    listOf(to).push(x);
+    const t = T(); if (t.taskId === x.id) t.taskDay = to;
+  }
   function nextMode(credit) {
     const t = T();
     let next;
@@ -1637,7 +1750,9 @@ body.fs-on .tabbar { display: none; }
     return next;
   }
   function complete() {
+    const wasFocus = T().mode === 'focus';
     const next = nextMode(true);
+    if (S.settings.notifyTimer && document.visibilityState !== 'visible') notify(wasFocus ? 'Focus session done!' : 'Break’s over', wasFocus ? 'Nice work. Time for a break.' : 'Ready for another focus session?', 'timer');
     chime(); doneFlash = Date.now();
     if (next === 'focus' ? S.settings.autoFocus : S.settings.autoBreak) { const t = T(); t.endsAt = Date.now() + t.left * 1000; t.running = true; }
     save(); renderAll(); syncWake();
@@ -1750,6 +1865,7 @@ body.fs-on .tabbar { display: none; }
   function renderHeader() {
     $('walletChip').innerHTML = `${seedSvg('')}<span>${balance()}</span>`;
     $('walletChip').setAttribute('aria-label', `${balance()} seeds. Open the shop.`);
+    try { renderQuestBadge(); } catch (e) {}
     const th = S.settings.theme;
     if (th === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', th);
     applyLookTheme();
@@ -1894,6 +2010,8 @@ body.fs-on .tabbar { display: none; }
       };
       div.append(sp, b); carry.appendChild(div);
     }
+    const ib = S.inbox.filter(x => !x.done).length, il = $('todoInboxLink');
+    il.hidden = !ib; il.textContent = `Inbox · ${ib} task${ib === 1 ? '' : 's'} waiting for a day ›`;
     const sn = $('sampleNote'); sn.innerHTML = '';
     if (Object.values(S.days).some(arr => arr.some(x => x.sample))) {
       const div = document.createElement('div'); div.className = 'note';
@@ -1910,6 +2028,8 @@ body.fs-on .tabbar { display: none; }
   const renderEst = () => { $('estOut').textContent = fmtDur(addMins); $('estOut').setAttribute('aria-label', `${addMins} minutes`); };
   function renderSettings() {
     const s = S.settings;
+    $('setNotifyLead').value = String(s.notifyLead ?? 5); $('setNotifyTimer').checked = s.notifyTimer !== false;
+    try { renderNotify(); } catch (e) {}
     $('setBudget').value = s.budget || ''; $('setCurrency').value = s.currency || 'CAD';
     $('setFocus').value = s.focus; $('setShort').value = s.short; $('setLong').value = s.long; $('setEvery').value = s.every; $('setGoal').value = s.goal; $('setTheme').value = s.theme;
     $('setAutoBreak').checked = s.autoBreak; $('setAutoFocus').checked = s.autoFocus; $('setSound').checked = s.sound; $('setWake').checked = s.wake;
@@ -1928,7 +2048,12 @@ body.fs-on .tabbar { display: none; }
   }
   const owns = id => S.owned.includes(id);
   const inUse = it => S.look[it.slot] === it.id;
+  let shopSeg = 'items';
   function renderShop() {
+    $('page-shop').dataset.seg = shopSeg;
+    document.querySelectorAll('#shopSeg button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.s === shopSeg)));
+    renderQuestBadge();
+    if (shopSeg === 'quests') { renderQuests(); renderAchievements(); }
     $('balance').innerHTML = `${seedSvg('')}<span>${balance()}</span><span class="muted" style="font-family:var(--font-body)">seeds</span>`;
     const chips = $('shopCats'); chips.innerHTML = '';
     CATS.forEach(([id, label]) => {
@@ -2078,6 +2203,8 @@ body.fs-on .tabbar { display: none; }
     $('tsName').value = task ? task.text : (pre.text || '');
     $('tsMins').value = task ? (task.mins || S.settings.focus) : (pre.mins || S.settings.focus);
     $('tsStart').value = task ? (task.start || '') : (pre.start || '');
+    $('tsDate').value = day === 'inbox' ? '' : day;
+    $('tsAiSteps').disabled = false; $('tsAiSteps').textContent = '✦ Break it down';
     $('tsDelete').hidden = !task;
     if (task) { task.subs = task.subs || []; sheetSubs = task.subs; } else sheetSubs = [];
     $('tsSubNew').value = ''; renderSheetSubs();
@@ -2167,13 +2294,18 @@ body.fs-on .tabbar { display: none; }
       toast('Couldn’t connect Google Calendar. Try again.');
     }
   }
-  async function loadGcal(day) {
-    if (!gcalLive() || gcal.loading) return;
-    const hit = gcal.cache[day]; if (hit && hit.at > Date.now() - 5 * 60 * 1000) return;
-    gcal.loading = true;
-    const [y, m, d] = day.split('-').map(Number);
-    const d0 = new Date(y, m - 1, d), d1 = new Date(y, m - 1, d + 1);
+  const gcalInflight = new Set();
+  async function loadGcal(day) { return loadGcalRange(day, 1); }
+  async function loadGcalRange(day0, n) {
+    if (!gcalLive()) return;
+    const days = Array.from({ length: n }, (_, i) => shiftKey(day0, i));
+    const key = day0 + '+' + n;
+    if (gcalInflight.has(key) || days.every(d => { const h = gcal.cache[d]; return h && h.at > Date.now() - 5 * 60 * 1000; })) return;
+    gcalInflight.add(key);
+    const [y, m, d] = day0.split('-').map(Number);
+    const r0 = new Date(y, m - 1, d), r1 = new Date(y, m - 1, d + n);
     const H = { Authorization: 'Bearer ' + gcal.token };
+    const buckets = {}; days.forEach(k => { buckets[k] = []; });
     try {
       if (!gcal.cals) {
         const r = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList?minAccessRole=reader&maxResults=50', { headers: H });
@@ -2186,9 +2318,8 @@ body.fs-on .tabbar { display: none; }
         (j.items || []).forEach(c => { if (!known.includes(c.id)) { known.push(c.id); changed = true; if (c.selected === false && !hidden.includes(c.id)) hidden.push(c.id); } });
         if (changed) { S.settings.gcalKnown = known; S.settings.gcalHidden = hidden; save(); }
       }
-      const all = [];
       await Promise.all(gcal.cals.map(async c => {
-        const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(c.id)}/events?singleEvents=true&orderBy=startTime&maxResults=60&timeMin=${encodeURIComponent(d0.toISOString())}&timeMax=${encodeURIComponent(d1.toISOString())}`;
+        const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(c.id)}/events?singleEvents=true&orderBy=startTime&maxResults=250&timeMin=${encodeURIComponent(r0.toISOString())}&timeMax=${encodeURIComponent(r1.toISOString())}`;
         const r = await fetch(url, { headers: H });
         if (r.status === 401) throw 401;
         if (!r.ok) return;
@@ -2196,22 +2327,33 @@ body.fs-on .tabbar { display: none; }
         (j.items || []).forEach(ev => {
           if (ev.status === 'cancelled') return;
           const title = ev.summary || '(no title)';
-          if (ev.start && ev.start.date) { all.push({ id: ev.id, title, allDay: true, color: c.color, cal: c.id }); return; }
+          if (ev.start && ev.start.date) {
+            let k = ev.start.date; const end = (ev.end && ev.end.date) || shiftKey(k, 1);
+            for (let g = 0; k < end && g < 62; g++, k = shiftKey(k, 1)) if (buckets[k]) buckets[k].push({ id: ev.id, title, allDay: true, color: c.color, cal: c.id });
+            return;
+          }
           const st = new Date(ev.start.dateTime), en = new Date(ev.end.dateTime);
-          const sMin = st < d0 ? 0 : st.getHours() * 60 + st.getMinutes();
-          const eMin = en >= d1 ? 1440 : en.getHours() * 60 + en.getMinutes();
-          all.push({ id: ev.id, title, s: sMin, e: Math.max(eMin, sMin + 15), color: c.color, cal: c.id });
+          days.forEach(k => {
+            const [yy, mm, dd] = k.split('-').map(Number);
+            const ds0 = new Date(yy, mm - 1, dd), ds1 = new Date(yy, mm - 1, dd + 1);
+            if (!(st < ds1 && en > ds0)) return;
+            const sMin = st < ds0 ? 0 : st.getHours() * 60 + st.getMinutes();
+            const eMin = en >= ds1 ? 1440 : en.getHours() * 60 + en.getMinutes();
+            buckets[k].push({ id: ev.id, title, s: sMin, e: Math.max(eMin, sMin + 15), color: c.color, cal: c.id });
+          });
         });
       }));
-      gcal.cache[day] = { at: Date.now(), events: all };
+      days.forEach(k => { gcal.cache[k] = { at: Date.now(), events: buckets[k] }; });
     } catch (e) {
       if (e === 401) dropGcal(false);
       else if (e === 403) { dropGcal(true); toast('Turn on the Google Calendar API for your Firebase project first (see the setup steps).'); }
+      else days.forEach(k => { if (!gcal.cache[k]) gcal.cache[k] = { at: Date.now(), events: [] }; });
     } finally {
-      gcal.loading = false;
+      gcalInflight.delete(key);
       if (tab === 'timeline') renderTimeline();
     }
   }
+
   let calPickerOpen = false;
   function renderGcalBar() {
     const bar = $('gcalBar'), pk = $('gcalCals'); bar.innerHTML = ''; pk.innerHTML = '';
@@ -2222,7 +2364,7 @@ body.fs-on .tabbar { display: none; }
     if (gcalLive()) {
       const n = (gcal.cache[viewDay] || {}).events;
       const shown = n ? n.filter(ev => !hidden.includes(ev.cal)).length : 0;
-      txt.innerHTML = `Google Calendar <span class="muted">· ${n ? shown + ' event' + (shown === 1 ? '' : 's') + ' shown' : 'loading…'}</span>`;
+      txt.innerHTML = tlView === 'day' ? `Google Calendar <span class="muted">· ${n ? shown + ' event' + (shown === 1 ? '' : 's') + ' shown' : 'loading…'}</span>` : 'Google Calendar <span class="muted">· connected</span>';
       const pick = document.createElement('button'); pick.className = 'link-btn';
       pick.textContent = calPickerOpen ? 'Done' : 'Choose calendars';
       pick.setAttribute('aria-expanded', String(calPickerOpen));
@@ -2260,11 +2402,9 @@ body.fs-on .tabbar { display: none; }
 
   // ---------- timeline ----------
   const PPM = 1.2;
-  function renderTimeline() {
+  function renderDayView() {
     const list = S.days[viewDay] || [], t = T(), isToday = viewDay === todayKey();
-    $('tlDay').textContent = dayLabel(viewDay);
     $('tlTitle').textContent = isToday ? 'Your day' : 'The plan';
-    renderGcalBar();
     if (gcalLive()) loadGcal(viewDay);
     const hiddenCals = S.settings.gcalHidden || [];
     const events = gcalLive() ? ((gcal.cache[viewDay] || {}).events || []).filter(ev => !hiddenCals.includes(ev.cal)) : [];
@@ -2347,6 +2487,7 @@ body.fs-on .tabbar { display: none; }
     }
   }
   function scrollTimeline() {
+    if (tlView !== 'day') return;
     const sc = $('tlScroll'), tl = $('tl'), r0 = Number(tl.dataset.r0) || 0;
     const now = tl.querySelector('.tl-now'), first = tl.querySelector('.tl-block');
     const target = now ? parseFloat(now.style.top) : first ? parseFloat(first.style.top) : (9 * 60 - r0) * PPM;
@@ -2429,6 +2570,9 @@ body.fs-on .tabbar { display: none; }
       line.innerHTML = `<span>goal ${goal}</span>`; week.appendChild(line);
     });
 
+  }
+
+  function renderAchievements() {
     const got = ACH.filter(a => S.ach[a.id]).length;
     $('achCount').textContent = `Achievements · ${got} of ${ACH.length}`;
     $('achs').innerHTML = '';
@@ -2442,6 +2586,375 @@ body.fs-on .tabbar { display: none; }
       el.querySelector('.rw').textContent = when ? `Unlocked ${when} · +${a.bonus} seeds` : `Reward: ${a.bonus} seeds`;
       $('achs').appendChild(el);
     });
+  }
+  function claimableQuests() {
+    try { const d = todayKey(), rec = S.quests[d] || { claimed: [] }; return questsFor(d).filter(q => !rec.claimed.includes(q.id) && q.val(d) >= q.goal).length; } catch (e) { return 0; }
+  }
+  function renderQuestBadge() {
+    const n = claimableQuests();
+    $('questBadge').textContent = n ? String(n) : '';
+    const shopLink = document.querySelector('.c-tl .corner-link'); if (shopLink) shopLink.classList.toggle('has-dot', n > 0);
+  }
+
+  // ---------- timeline views ----------
+  let tlView = 'day';
+  try { tlView = localStorage.getItem('burrow.tlView') || 'day'; } catch (e) {}
+  function setTlView(v) {
+    tlView = ['inbox', 'day', 'week', 'month'].includes(v) ? v : 'day';
+    try { localStorage.setItem('burrow.tlView', tlView); } catch (e) {}
+    renderTimeline();
+    if (tlView === 'day') requestAnimationFrame(scrollTimeline);
+  }
+  const weekStartOf = k => { const [y, m, d] = k.split('-').map(Number); return shiftKey(k, -new Date(y, m - 1, d).getDay()); };
+  const shortDate = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); };
+  const visibleEvents = k => gcalLive() ? ((gcal.cache[k] || {}).events || []).filter(ev => !(S.settings.gcalHidden || []).includes(ev.cal)) : [];
+  function renderTimeline() {
+    document.querySelectorAll('#tlViews button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.v === tlView)));
+    ['inbox', 'day', 'week', 'month'].forEach(v => { $('tl' + v[0].toUpperCase() + v.slice(1) + 'View').hidden = v !== tlView; });
+    const ib = S.inbox.filter(x => !x.done).length; $('inboxCount').textContent = ib ? String(ib) : '';
+    $('tlNavRow').hidden = tlView === 'inbox';
+    $('tlGcal').hidden = tlView === 'inbox';
+    $('aiPlanBtn').hidden = tlView !== 'day';
+    if (tlView !== 'inbox') renderGcalBar();
+    if (tlView === 'day') { $('tlDay').textContent = dayLabel(viewDay); renderDayView(); }
+    if (tlView === 'week') renderWeek();
+    if (tlView === 'month') renderMonth();
+    if (tlView === 'inbox') renderInbox();
+  }
+  function dayItems(k) {
+    const tasks = (S.days[k] || []).map(x => ({ kind: 'task', x, s: x.start ? toMin(x.start) : null }));
+    const evs = visibleEvents(k).map(ev => ({ kind: 'event', ev, s: ev.allDay ? -1 : ev.s }));
+    return tasks.concat(evs).sort((a, b) => (a.s == null ? 2000 : a.s) - (b.s == null ? 2000 : b.s));
+  }
+  function itemRow(it, k) {
+    const b = document.createElement('button'); b.className = 'wk-item';
+    const t = document.createElement('span'); t.className = 't';
+    const n = document.createElement('span'); n.className = 'n'; n.appendChild(document.createElement('i'));
+    const d = document.createElement('span'); d.className = 'd';
+    if (it.kind === 'task') {
+      const x = it.x; if (x.done) b.classList.add('done');
+      t.textContent = x.start ? fmtClock(toMin(x.start)) : 'anytime';
+      n.append(document.createTextNode(x.text)); d.textContent = fmtDur(x.mins || S.settings.focus);
+      b.onclick = () => openTaskSheet(x, k);
+    } else {
+      const ev = it.ev; b.classList.add('ev'); n.querySelector('i').style.background = ev.color;
+      t.textContent = ev.allDay ? 'all day' : fmtClock(ev.s % 1440);
+      n.append(document.createTextNode(ev.title)); d.textContent = ev.allDay ? '' : fmtDur(ev.e - ev.s);
+      b.onclick = () => openTaskSheet(null, k, ev.allDay ? { text: ev.title } : { text: ev.title, start: toHHMM(ev.s % 1440), mins: Math.max(5, Math.min(600, ev.e - ev.s)) });
+    }
+    b.append(t, n, d); return b;
+  }
+  function renderWeek() {
+    const w0 = weekStartOf(viewDay), today = todayKey();
+    $('tlDay').textContent = `${shortDate(w0)} – ${shortDate(shiftKey(w0, 6))}`;
+    if (gcalLive()) loadGcalRange(w0, 7);
+    let total = 0, count = 0;
+    const host = $('wkList'); host.innerHTML = '';
+    for (let i = 0; i < 7; i++) {
+      const k = shiftKey(w0, i), list = S.days[k] || [];
+      const mins = list.reduce((a, x) => a + (x.mins || S.settings.focus), 0); total += mins; count += list.length;
+      const box = document.createElement('div'); box.className = 'wk-day' + (k === today ? ' today' : '');
+      const head = document.createElement('button'); head.className = 'wk-head';
+      const [y, m, d] = k.split('-').map(Number);
+      const b1 = document.createElement('b'); b1.textContent = k === today ? `Today · ${shortDate(k)}` : new Date(y, m - 1, d).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+      const s1 = document.createElement('span'); s1.textContent = list.length ? `${list.filter(x => x.done).length}/${list.length} done · ${fmtDur(mins)}` : '';
+      head.append(b1, s1); head.onclick = () => { viewDay = k; setTlView('day'); };
+      box.appendChild(head);
+      const items = dayItems(k);
+      if (!items.length) {
+        const e = document.createElement('div'); e.className = 'wk-empty';
+        const sp = document.createElement('span'); sp.textContent = 'Nothing planned';
+        const add = document.createElement('button'); add.className = 'link-btn'; add.textContent = '+ Add'; add.onclick = () => openTaskSheet(null, k);
+        e.append(sp, add); box.appendChild(e);
+      } else items.forEach(it => box.appendChild(itemRow(it, k)));
+      host.appendChild(box);
+    }
+    $('wkSummary').textContent = count ? `${count} task${count === 1 ? '' : 's'} · ${fmtDur(total)} planned this week` : 'Nothing planned this week yet.';
+  }
+  function renderMonth() {
+    const [y, m] = viewDay.split('-').map(Number), today = todayKey();
+    $('tlDay').textContent = new Date(y, m - 1, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    if (!$('moDow').childElementCount) $('moDow').innerHTML = Array.from({ length: 7 }, (_, i) => `<span>${new Date(2024, 8, 1 + i).toLocaleDateString(undefined, { weekday: 'narrow' })}</span>`).join('');
+    const first = `${y}-${pad(m)}-01`, g0 = weekStartOf(first);
+    const last = `${y}-${pad(m)}-${pad(new Date(y, m, 0).getDate())}`;
+    const g1 = shiftKey(weekStartOf(last), 6);
+    let n = 0; for (let k = g0; k <= g1; k = shiftKey(k, 1)) n++;
+    if (gcalLive()) loadGcalRange(g0, n);
+    const grid = $('moGrid'); grid.innerHTML = '';
+    for (let k = g0; k <= g1; k = shiftKey(k, 1)) {
+      const b = document.createElement('button');
+      b.className = 'mo-day' + (k.slice(0, 7) !== viewDay.slice(0, 7) ? ' out' : '') + (k === today ? ' today' : '') + (k === viewDay ? ' sel' : '');
+      const tasks = S.days[k] || [], evs = visibleEvents(k);
+      const dots = tasks.slice(0, 5).map(x => `<i class="${x.done ? 'done' : ''}"></i>`).join('') + evs.slice(0, Math.max(0, 6 - Math.min(tasks.length, 5))).map(ev => `<i class="ev" style="background:${ev.color}"></i>`).join('');
+      b.innerHTML = `<span>${Number(k.slice(8))}</span><span class="mo-dots">${dots}</span>`;
+      b.setAttribute('aria-label', `${k}: ${tasks.length} tasks, ${evs.length} events`);
+      const kk = k; b.onclick = () => { viewDay = kk; renderTimeline(); };
+      grid.appendChild(b);
+    }
+    const det = $('moDetail'); det.innerHTML = '';
+    const [yy, mm, dd] = viewDay.split('-').map(Number);
+    const h = document.createElement('div'); h.className = 'cal-dtitle';
+    h.textContent = new Date(yy, mm - 1, dd).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+    det.appendChild(h);
+    const items = dayItems(viewDay);
+    if (!items.length) { const p = document.createElement('div'); p.className = 'muted'; p.textContent = 'Nothing planned.'; det.appendChild(p); }
+    items.forEach(it => det.appendChild(itemRow(it, viewDay)));
+    const acts = document.createElement('div'); acts.className = 'mo-actions';
+    const o = document.createElement('button'); o.className = 'btn-ghost'; o.textContent = 'Open day'; o.onclick = () => setTlView('day');
+    const a = document.createElement('button'); a.className = 'btn-ghost'; a.textContent = 'Add task'; a.onclick = () => openTaskSheet(null, viewDay);
+    acts.append(o, a); det.appendChild(acts);
+  }
+  function renderInbox() {
+    const ul = $('inboxList'); ul.innerHTML = '';
+    if (!S.inbox.length) { const li = document.createElement('li'); li.className = 'inbox-empty'; li.style.display = 'block'; li.textContent = 'Your inbox is empty. Add tasks above, or use Brain dump to add a bunch at once.'; ul.appendChild(li); }
+    const today = todayKey();
+    S.inbox.slice().sort((a, b) => a.done - b.done).forEach(x => {
+      const li = document.createElement('li'); if (x.done) li.className = 'done';
+      const chk = document.createElement('button'); chk.className = 'check'; chk.setAttribute('aria-label', x.done ? 'Mark not done' : 'Mark done');
+      chk.innerHTML = '<svg viewBox="0 0 14 14"><path d="M2 7.5l3 3 7-7"/></svg>';
+      if (x.done) chk.style.cssText = 'background:var(--leaf);border-color:var(--leaf)';
+      chk.querySelector('svg').style.opacity = x.done ? '1' : '0';
+      chk.onclick = () => { x.done = !x.done; if (x.done) onTaskDone(x, 'inbox'); save(); renderTimeline(); renderTasks(); };
+      const main = document.createElement('button'); main.className = 'task-main';
+      const tx = document.createElement('span'); tx.className = 'task-text'; tx.textContent = x.text;
+      const meta = document.createElement('span'); meta.className = 'task-seeds';
+      meta.textContent = fmtDur(x.mins || S.settings.focus) + ((x.subs || []).length ? ` · ${x.subs.filter(q => q.done).length}/${x.subs.length} steps` : '');
+      main.append(tx, meta); main.onclick = () => openTaskSheet(x, 'inbox');
+      li.append(chk, main);
+      if (!x.done) {
+        const mv = document.createElement('div'); mv.className = 'moves';
+        const mk = (label, day) => { const b = document.createElement('button'); b.textContent = label; b.onclick = () => { moveTask(x, 'inbox', day); save(); renderTimeline(); renderTasks(); toast(`Moved to ${dayLabel(day).toLowerCase()}`); }; return b; };
+        const pick = document.createElement('label'); pick.textContent = 'Pick a day';
+        const di = document.createElement('input'); di.type = 'date'; di.min = today; di.setAttribute('aria-label', `Pick a day for ${x.text}`);
+        di.onchange = () => { if (!di.value) return; moveTask(x, 'inbox', di.value); save(); renderTimeline(); renderTasks(); toast(`Moved to ${dayLabel(di.value)}`); };
+        pick.appendChild(di);
+        mv.append(mk('Today', today), mk('Tomorrow', shiftKey(today, 1)), pick);
+        li.appendChild(mv);
+      }
+      ul.appendChild(li);
+    });
+    if (S.inbox.some(x => x.done)) {
+      const li = document.createElement('li'); li.style.cssText = 'display:block;background:transparent;box-shadow:none;padding:0';
+      const b = document.createElement('button'); b.className = 'link-btn'; b.textContent = 'Clear finished';
+      b.onclick = () => { S.inbox = S.inbox.filter(x => !x.done); save(); renderTimeline(); renderTasks(); };
+      li.appendChild(b); ul.appendChild(li);
+    }
+  }
+
+  // ---------- notifications ----------
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isStandalone = () => window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  let swReg = null;
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').then(r => { swReg = r; }).catch(() => {});
+  const notifyWanted = () => { try { return localStorage.getItem('burrow.notify') === '1'; } catch (e) { return false; } };
+  const notifyOn = () => notifyWanted() && 'Notification' in window && Notification.permission === 'granted';
+  async function notify(title, body, tag) {
+    if (!notifyOn()) return false;
+    try {
+      const reg = swReg || (navigator.serviceWorker ? await navigator.serviceWorker.getRegistration() : null);
+      if (reg && reg.showNotification) { await reg.showNotification(title, { body, tag, icon: 'icon-192.png', badge: 'icon-192.png' }); return true; }
+      new Notification(title, { body, tag, icon: 'icon-192.png' }); return true;
+    } catch (e) { return false; }
+  }
+  function renderNotify() {
+    const st = $('notifyStatus'), btn = $('notifyBtn');
+    btn.hidden = false;
+    if (isIOS && !isStandalone()) { st.textContent = 'On iPhone, notifications only work when Burrow is opened from your Home Screen. Add it with Share → Add to Home Screen, open it from there, then turn them on.'; btn.hidden = true; return; }
+    if (!('Notification' in window)) { st.textContent = 'This browser doesn’t support notifications.'; btn.hidden = true; return; }
+    if (Notification.permission === 'denied') { st.textContent = 'Notifications are blocked for Burrow. Turn them back on in your device or browser settings.'; btn.hidden = true; return; }
+    if (notifyOn()) { st.textContent = 'On. Burrow pings you when a session ends and before planned tasks, while Burrow is open or in the background on a computer.'; btn.textContent = 'Turn off notifications'; btn.className = 'btn-ghost'; }
+    else { st.textContent = 'Get a ping when a session ends and before tasks with a start time.'; btn.textContent = 'Turn on notifications'; btn.className = 'btn-accent'; }
+  }
+  async function toggleNotify() {
+    if (notifyOn()) { try { localStorage.setItem('burrow.notify', '0'); } catch (e) {} renderNotify(); return; }
+    let p = 'default';
+    try { p = await Notification.requestPermission(); } catch (e) {}
+    if (p === 'granted') { try { localStorage.setItem('burrow.notify', '1'); } catch (e) {} notify('Burrow', 'Notifications are on. Pip will ping you here.', 'hello'); }
+    else toast('Notifications weren’t allowed.');
+    renderNotify();
+  }
+  function checkReminders() {
+    const lead = Number(S.settings.notifyLead); if (!(lead >= 0)) return;
+    const k = todayKey(), now = new Date(), nowM = now.getHours() * 60 + now.getMinutes();
+    let fired = {}; try { fired = JSON.parse(localStorage.getItem('burrow.reminded') || '{}'); } catch (e) {}
+    if (fired.day !== k) fired = { day: k, ids: [] };
+    let changed = false;
+    (S.days[k] || []).forEach(x => {
+      if (x.done || !x.start) return;
+      const st = toMin(x.start), key = `${x.id}@${x.start}`;
+      if (fired.ids.includes(key) || nowM < st - lead || nowM > st + 5) return;
+      fired.ids.push(key); changed = true;
+      const when = nowM >= st ? 'starts now' : `starts in ${st - nowM} min`;
+      if (document.visibilityState === 'visible') { ensureAudio(); chime([659.25, 880]); toast(`${x.text} ${when}`); }
+      else notify(x.text, `${when[0].toUpperCase() + when.slice(1)} · ${fmtDur(x.mins || S.settings.focus)} planned`, 'task-' + x.id);
+    });
+    if (changed) try { localStorage.setItem('burrow.reminded', JSON.stringify(fired)); } catch (e) {}
+  }
+  setInterval(checkReminders, 20000);
+
+  // ---------- AI helper (Firebase AI Logic, Gemini) ----------
+  const AI_MODELS = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
+  let aiMod = null, aiInst = null, aiModelIdx = 0, aiNext = null, aiBusy = false;
+  async function askAI(prompt) {
+    if (!configured) throw new Error('setup');
+    if (!fb || !fb.app) throw new Error('loading');
+    if (!aiMod) aiMod = await import(FB + 'firebase-ai.js');
+    if (!aiInst) aiInst = aiMod.getAI(fb.app, { backend: new aiMod.GoogleAIBackend() });
+    let last;
+    for (let i = aiModelIdx; i < AI_MODELS.length; i++) {
+      try {
+        const model = aiMod.getGenerativeModel(aiInst, { model: AI_MODELS[i], generationConfig: { responseMimeType: 'application/json', temperature: 0.4 } });
+        const res = await model.generateContent(prompt);
+        aiModelIdx = i;
+        const txt = res.response.text().trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+        return JSON.parse(txt);
+      } catch (e) {
+        last = e;
+        if (!/not found|404|not supported|unsupported|is not available|retired|deprecated/i.test(String((e && e.message) || e))) break;
+      }
+    }
+    throw last;
+  }
+  function aiErrText(e) {
+    const m = String((e && e.message) || e || '');
+    if (m === 'setup') return 'The AI helper needs the Firebase setup first.';
+    if (m === 'loading') return 'Burrow is still connecting. Try again in a moment.';
+    if (e instanceof SyntaxError) return 'The AI answered in a way Burrow couldn’t read. Try again.';
+    if (/quota|429|RESOURCE_EXHAUSTED|rate/i.test(m)) return 'The free AI limit is used up for now. Try again in a minute.';
+    if (/PERMISSION_DENIED|403|has not been used|is disabled|not enabled|API key|firebasevertexai|firebaseml|ai logic|api-not-enabled/i.test(m)) return 'Turn on AI Logic in your Firebase project first (see the setup steps).';
+    if (/network|Failed to fetch|load/i.test(m)) return 'Can’t reach the AI right now. Check your internet and try again.';
+    return 'The AI couldn’t help with that just now. Try again.';
+  }
+  const validDay = d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d) && d >= shiftKey(todayKey(), -1) && d <= shiftKey(todayKey(), 366);
+  const validTime = t => typeof t === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(t);
+  const clampMins = (v, d) => { v = Math.round(Number(v)); return v >= 5 && v <= 600 ? v : d; };
+  function aiOpen(title, opts = {}) {
+    $('aiTitle').textContent = title;
+    $('aiInputWrap').hidden = !opts.input;
+    $('aiSummary').hidden = true; $('aiSummary').textContent = '';
+    $('aiList').innerHTML = ''; $('aiStatus').textContent = opts.status || '';
+    $('aiGo').hidden = !opts.go; $('aiGo').textContent = opts.go || 'Apply'; $('aiGo').disabled = false;
+    $('aiCancel').textContent = 'Cancel';
+    aiNext = opts.next || null;
+    if (!$('aiSheet').open) { try { $('aiSheet').showModal(); } catch (e) { $('aiSheet').setAttribute('open', ''); } }
+  }
+  function aiShow(summary, props, goLabel, apply) {
+    $('aiStatus').textContent = '';
+    $('aiInputWrap').hidden = true;
+    if (summary) { $('aiSummary').textContent = summary; $('aiSummary').hidden = false; }
+    const ul = $('aiList'); ul.innerHTML = '';
+    if (!props.length) { $('aiStatus').textContent = 'Nothing to change. Looks good already!'; $('aiGo').hidden = true; $('aiCancel').textContent = 'Close'; return; }
+    props.forEach((p, i) => {
+      const li = document.createElement('li'), lab = document.createElement('label');
+      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = p.on !== false; cb.id = 'aiP' + i; cb.onchange = () => { p.on = cb.checked; };
+      const nm = document.createElement('span'); nm.textContent = p.label;
+      if (p.sub) { const sb = document.createElement('span'); sb.className = 'sub2'; sb.textContent = p.sub; nm.appendChild(sb); }
+      const tm = document.createElement('span'); tm.className = 'tm'; tm.textContent = p.right || '';
+      lab.append(cb, nm, tm); li.appendChild(lab); ul.appendChild(li);
+    });
+    $('aiGo').hidden = false; $('aiGo').textContent = goLabel; $('aiGo').disabled = false;
+    aiNext = () => { const n = apply(props.filter(p => p.on !== false)); $('aiSheet').close(); save(); renderAll(); if (n) toast(`Done · ${n} change${n === 1 ? '' : 's'}`); };
+  }
+  async function aiRun(prompt, onResult) {
+    if (aiBusy) return; aiBusy = true;
+    $('aiStatus').textContent = 'Pip is thinking…'; $('aiGo').disabled = true;
+    try { onResult(await askAI(prompt)); }
+    catch (e) { $('aiStatus').textContent = aiErrText(e); $('aiGo').disabled = false; }
+    finally { aiBusy = false; }
+  }
+  const taskBrief = x => ({ id: x.id, title: x.text, minutes: x.mins || Number(S.settings.focus), start: x.start || null, done: !!x.done, steps: (x.subs || []).map(q => q.text) });
+  const dayName = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long' }); };
+  function aiPlanDay() {
+    const k = viewDay, today = todayKey(), now = new Date();
+    const list = (S.days[k] || []).filter(x => !x.done);
+    if (!list.length && !S.inbox.some(x => !x.done)) { toast('Add some tasks to this day (or your inbox) first.'); return; }
+    aiOpen(`Plan ${dayLabel(k).toLowerCase()}`, { status: 'Pip is thinking…' });
+    const events = visibleEvents(k).filter(ev => !ev.allDay).map(ev => ({ title: ev.title, start: toHHMM(ev.s % 1440), end: toHHMM(Math.min(ev.e, 1439)) }));
+    const earliest = k === today ? toHHMM(Math.min(23 * 60, Math.ceil((now.getHours() * 60 + now.getMinutes() + 10) / 15) * 15)) : '08:00';
+    const prompt = `You are Pip, a friendly planning helper inside a pomodoro app called Burrow. Plan the user's day.
+Date: ${k} (${dayName(k)}). Earliest start: ${earliest}. Latest finish: 22:30. Focus session length: ${S.settings.focus} minutes.
+Fixed calendar events (do not move, do not overlap): ${JSON.stringify(events)}
+Tasks for this day: ${JSON.stringify(list.map(taskBrief))}
+Inbox tasks with no day yet (you may pull in up to 3 that fit and look urgent or quick): ${JSON.stringify(S.inbox.filter(x => !x.done).slice(0, 25).map(taskBrief))}
+Rules: give every task for this day a start time; keep a task's existing start time unless it clashes or is before the earliest start; leave 5-15 minute gaps between tasks; put harder or longer work earlier; do not change minutes unless a task clearly needs more or less time; never invent ids.
+Reply with JSON only: {"summary":"one or two short, warm sentences about the plan","items":[{"id":"task id","start":"HH:MM","minutes":number}]}`;
+    aiRun(prompt, r => {
+      const props = [];
+      (Array.isArray(r.items) ? r.items : []).forEach(it => {
+        const inDay = (S.days[k] || []).find(x => x.id === it.id), inInbox = S.inbox.find(x => x.id === it.id);
+        const x = inDay || inInbox; if (!x || !validTime(it.start)) return;
+        const mins = clampMins(it.minutes, x.mins || Number(S.settings.focus));
+        if (inDay && x.start === it.start && (x.mins || 0) === mins) return;
+        props.push({ label: x.text, sub: inInbox ? 'from your inbox' : (x.start && x.start !== it.start ? `was ${fmtClock(toMin(x.start))}` : ''), right: `${fmtClock(toMin(it.start))} · ${fmtDur(mins)}`, apply: () => { x.start = it.start; x.mins = mins; x.est = estOf(x); if (inInbox) moveTask(x, 'inbox', k); } });
+      });
+      props.sort((a, b) => a.right.localeCompare(b.right));
+      aiShow(r.summary || '', props, 'Apply plan', ps => { ps.forEach(p => p.apply()); return ps.length; });
+    });
+  }
+  function aiSortInbox() {
+    const items = S.inbox.filter(x => !x.done);
+    if (!items.length) { toast('Your inbox is empty.'); return; }
+    aiOpen('Sort your inbox', { status: 'Pip is thinking…' });
+    const today = todayKey();
+    const load = Array.from({ length: 14 }, (_, i) => { const k = shiftKey(today, i); const l = S.days[k] || []; return { date: k, weekday: dayName(k), plannedMinutes: l.reduce((a, x) => a + (x.done ? 0 : (x.mins || 0)), 0), events: visibleEvents(k).filter(e => !e.allDay).length }; });
+    const prompt = `You are Pip, a friendly planning helper inside a pomodoro app called Burrow. The user has tasks in their inbox with no day yet. Suggest a day for each one in the next two weeks.
+Today: ${today} (${dayName(today)}). Upcoming days with how busy they already are: ${JSON.stringify(load)}
+Inbox tasks: ${JSON.stringify(items.slice(0, 40).map(taskBrief))}
+Rules: use deadlines or time words in a title (like "by friday", "tomorrow", "tonight") when present; otherwise spread work so no day goes much over 6 hours of planned minutes; put quick tasks sooner; only give a start time when the title clearly implies one; use day null for things that truly should wait; estimate minutes if the current value looks wrong; never invent ids.
+Reply with JSON only: {"summary":"one short, warm sentence","items":[{"id":"task id","day":"YYYY-MM-DD or null","start":"HH:MM or null","minutes":number}]}`;
+    aiRun(prompt, r => {
+      const props = [];
+      (Array.isArray(r.items) ? r.items : []).forEach(it => {
+        const x = S.inbox.find(t => t.id === it.id); if (!x || !validDay(it.day)) return;
+        const mins = clampMins(it.minutes, x.mins || Number(S.settings.focus));
+        const start = validTime(it.start) ? it.start : null;
+        props.push({ label: x.text, right: `${dayLabel(it.day)}${start ? ' · ' + fmtClock(toMin(start)) : ''} · ${fmtDur(mins)}`, k: it.day, apply: () => { x.mins = mins; x.est = estOf(x); if (start) x.start = start; moveTask(x, 'inbox', it.day); } });
+      });
+      props.sort((a, b) => a.k.localeCompare(b.k));
+      aiShow(r.summary || '', props, 'Move them', ps => { ps.forEach(p => p.apply()); return ps.length; });
+    });
+  }
+  function aiBrainDump() {
+    aiOpen('Brain dump', { input: true, go: 'Organize', next: () => {
+      const text = $('aiDump').value.trim(); if (!text) { $('aiDump').focus(); return; }
+      const today = todayKey();
+      const prompt = `You are Pip, a friendly planning helper inside a pomodoro app called Burrow. Turn the user's messy brain dump into clear tasks.
+Today: ${today} (${dayName(today)}). The next 7 days: ${JSON.stringify(Array.from({ length: 7 }, (_, i) => ({ date: shiftKey(today, i), weekday: dayName(shiftKey(today, i)) })))}
+Brain dump (between <<< and >>>): <<<${text.slice(0, 4000)}>>>
+Rules: one task per real to-do; short clear titles starting with a verb; estimate minutes (5-240); set day only when the text says or clearly implies when (convert words like "tomorrow" or "thursday" to dates), otherwise null so it goes to the inbox; set start only if a time is given; add 2-5 short steps only for big tasks; keep the user's own words for names of courses, people and places.
+Reply with JSON only: {"summary":"one short, warm sentence","tasks":[{"title":"...","day":"YYYY-MM-DD or null","start":"HH:MM or null","minutes":number,"steps":["..."]}]}`;
+      $('aiInputWrap').hidden = true;
+      aiRun(prompt, r => {
+        const props = (Array.isArray(r.tasks) ? r.tasks : []).filter(t => t && typeof t.title === 'string' && t.title.trim()).slice(0, 40).map(t => {
+          const day = validDay(t.day) ? t.day : 'inbox', start = validTime(t.start) ? t.start : null, mins = clampMins(t.minutes, Number(S.settings.focus) || 25);
+          const steps = Array.isArray(t.steps) ? t.steps.filter(q => typeof q === 'string' && q.trim()).slice(0, 8) : [];
+          return { label: t.title.trim().slice(0, 120), sub: steps.length ? `${steps.length} steps` : '', right: `${day === 'inbox' ? 'Inbox' : dayLabel(day)}${start ? ' · ' + fmtClock(toMin(start)) : ''} · ${fmtDur(mins)}`, apply: () => {
+            const x = { id: uid(), text: t.title.trim().slice(0, 120), mins, start, est: 1, pomos: 0, spent: 0, done: false, subs: steps.map(q => ({ id: uid(), text: q.trim().slice(0, 120), done: false })) };
+            x.est = estOf(x); listOf(day).push(x);
+          } };
+        });
+        aiShow(r.summary || '', props, 'Add tasks', ps => { ps.forEach(p => p.apply()); return ps.length; });
+      });
+    } });
+    $('aiDump').value = '';
+    setTimeout(() => { try { $('aiDump').focus(); } catch (e) {} }, 60);
+  }
+  async function aiSteps() {
+    const name = $('tsName').value.trim(); if (!name) { $('tsName').focus(); return; }
+    const btn = $('tsAiSteps'); if (btn.disabled) return;
+    btn.disabled = true; btn.textContent = 'Thinking…';
+    const prompt = `You are Pip, a friendly helper inside a pomodoro app. Break this task into small, concrete steps a student could check off one at a time.
+Task: "${name.slice(0, 200)}". Planned time: ${$('tsMins').value || S.settings.focus} minutes. Steps already listed: ${JSON.stringify(sheetSubs.map(q => q.text))}
+Rules: 3-7 new steps, each under 60 characters, starting with a verb, in order, not repeating existing steps.
+Reply with JSON only: {"steps":["..."]}`;
+    try {
+      const r = await askAI(prompt);
+      const steps = (Array.isArray(r.steps) ? r.steps : []).filter(q => typeof q === 'string' && q.trim()).slice(0, 8);
+      steps.forEach(q => sheetSubs.push({ id: uid(), text: q.trim().slice(0, 120), done: false }));
+      sheetSubsChanged();
+      toast(steps.length ? `Added ${steps.length} steps` : 'No steps suggested');
+    } catch (e) { toast(aiErrText(e)); }
+    finally { btn.disabled = false; btn.textContent = '✦ Break it down'; }
   }
 
   // ---------- pages ----------
@@ -2457,7 +2970,7 @@ body.fs-on .tabbar { display: none; }
   function renderPage() {
     const n = openPageName;
     if (n === 'shop') renderShop();
-    if (n === 'settings') renderLookPicker();
+    if (n === 'settings') { renderLookPicker(); renderNotify(); }
     renderTab();
   }
   function showTab(name) {
@@ -2541,10 +3054,31 @@ body.fs-on .tabbar { display: none; }
   $('prevDay').onclick = () => goDay(shiftKey(viewDay, -1));
   $('nextDay').onclick = () => goDay(shiftKey(viewDay, 1));
   $('dayLabel').onclick = () => goDay(todayKey());
-  $('tlPrev').onclick = () => goDay(shiftKey(viewDay, -1));
-  $('tlNext').onclick = () => goDay(shiftKey(viewDay, 1));
+  const shiftMonth = (k, n) => { const [y, m] = k.split('-').map(Number); const d = new Date(y, m - 1 + n, 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-01`; };
+  const step = dir => tlView === 'week' ? shiftKey(viewDay, 7 * dir) : tlView === 'month' ? shiftMonth(viewDay, dir) : shiftKey(viewDay, dir);
+  $('tlPrev').onclick = () => goDay(step(-1));
+  $('tlNext').onclick = () => goDay(step(1));
   $('tlDay').onclick = () => goDay(todayKey());
-  $('tlAdd').onclick = () => openTaskSheet(null, viewDay);
+  $('tlAdd').onclick = () => openTaskSheet(null, tlView === 'inbox' ? 'inbox' : viewDay);
+  document.querySelectorAll('#tlViews button').forEach(b => b.onclick = () => setTlView(b.dataset.v));
+  document.querySelectorAll('#shopSeg button').forEach(b => b.onclick = () => { shopSeg = b.dataset.s; renderShop(); });
+  $('todoInboxLink').onclick = () => { showTab('timeline'); setTlView('inbox'); };
+  $('inboxForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const v = $('inboxNew').value.trim(); if (!v) { $('inboxNew').focus(); return; }
+    const x = { id: uid(), text: v, mins: Number(S.settings.focus) || 25, start: null, est: 1, pomos: 0, spent: 0, done: false, subs: [] };
+    S.inbox.push(x); $('inboxNew').value = ''; save(); renderTimeline(); renderTasks();
+  });
+  $('aiPlanBtn').onclick = aiPlanDay;
+  $('aiSortBtn').onclick = aiSortInbox;
+  $('aiDumpBtn').onclick = aiBrainDump;
+  $('tsAiSteps').onclick = aiSteps;
+  $('aiClose').onclick = () => $('aiSheet').close();
+  $('aiCancel').onclick = () => $('aiSheet').close();
+  $('aiGo').onclick = () => { if (aiNext) aiNext(); };
+  $('notifyBtn').onclick = toggleNotify;
+  $('setNotifyLead').addEventListener('change', e => { S.settings.notifyLead = Number(e.target.value); save(); });
+  $('setNotifyTimer').addEventListener('change', e => { S.settings.notifyTimer = e.target.checked; save(); });
   $('tl').addEventListener('click', e => {
     if (e.target.closest('.tl-block, .tl-event')) return;
     const tl = $('tl'), y = e.clientY - tl.getBoundingClientRect().top - 12;
@@ -2556,6 +3090,7 @@ body.fs-on .tabbar { display: none; }
   $('tsDur').addEventListener('click', e => { const b = e.target.closest('button[data-m]'); if (!b) return; $('tsMins').value = b.dataset.m; markDur(); });
   $('tsMins').addEventListener('input', markDur);
   $('tsClearTime').onclick = () => { $('tsStart').value = ''; };
+  $('tsToInbox').onclick = () => { $('tsDate').value = ''; toast('Will move to your inbox when you save'); };
   $('tsClose').onclick = () => $('taskSheet').close();
   $('tsSubAdd').onclick = addSheetSub;
   $('tsSubNew').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addSheetSub(); } });
@@ -2571,12 +3106,14 @@ body.fs-on .tabbar { display: none; }
     const name = $('tsName').value.trim(); if (!name) { $('tsName').focus(); return; }
     let mins = Math.round(Number($('tsMins').value)); if (!mins || mins < 5) mins = 5; if (mins > 600) mins = 600;
     const start = $('tsStart').value || null;
-    if (sheetTask) { Object.assign(sheetTask, { text: name, mins, start }); sheetTask.est = estOf(sheetTask); }
-    else { const x = { id: uid(), text: name, mins, start, est: 1, pomos: 0, spent: 0, done: false, subs: sheetSubs }; x.est = estOf(x); (S.days[sheetDay] = S.days[sheetDay] || []).push(x); }
+    const target = $('tsDate').value || 'inbox';
+    if (sheetTask) { Object.assign(sheetTask, { text: name, mins, start }); sheetTask.est = estOf(sheetTask); moveTask(sheetTask, sheetDay, target); }
+    else { const x = { id: uid(), text: name, mins, start, est: 1, pomos: 0, spent: 0, done: false, subs: sheetSubs }; x.est = estOf(x); listOf(target).push(x); }
+    if (target !== sheetDay && target !== 'inbox' && !sheetTask) {}
     $('taskSheet').close(); save(); renderAll();
   });
   $('tsDelete').onclick = () => {
-    const list = S.days[sheetDay] || [], i = list.indexOf(sheetTask); if (i >= 0) list.splice(i, 1);
+    const list = listOf(sheetDay), i = list.indexOf(sheetTask); if (i >= 0) list.splice(i, 1);
     const t = T(); if (sheetTask && t.taskId === sheetTask.id) { t.taskId = null; t.taskDay = null; }
     $('taskSheet').close(); save(); renderAll();
   };

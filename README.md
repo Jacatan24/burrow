@@ -78,3 +78,13 @@ Edit `index.html` (or get an updated copy), then upload it to the same GitHub re
 - If you sign in on a device that already has data, whichever copy was changed most recently wins.
 - On iPhone, the timer keeps correct time in the background, but the chime can only play while Burrow is open on screen.
 - Google sign-in from a Home Screen app can sometimes open a separate browser window. Email and password always works.
+
+## AI helper (optional, free)
+
+1. In the Firebase console, open **AI services → AI Logic** and click **Get started**.
+2. Choose **Gemini Developer API** (the free option) and finish the steps.
+3. That's it. The ✦ buttons in Burrow (Plan my day, Sort with AI, Brain dump, Break it down) now work.
+
+## Notifications
+
+On iPhone, open Burrow from your Home Screen, then go to **Settings → Notifications → Turn on notifications**. Notifications fire while Burrow is open (or in a background tab on a computer). iPhone pauses web apps that are fully closed, so reminders can't arrive then.
