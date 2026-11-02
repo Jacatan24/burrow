@@ -502,6 +502,14 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
 /* google calendar + import */
 .gcal-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 14px; background: var(--surface-2); font-weight: 700; font-size: .9rem; }
 .gcal-bar .muted { font-size: .85rem; }
+.gcal-bar .acts { display: flex; gap: 12px; align-items: center; }
+.gcal-cals { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 0 4px; }
+.gcal-cals .hint { width: 100%; font-size: .8rem; font-weight: 700; color: var(--muted); }
+.cal-toggle { display: inline-flex; align-items: center; gap: 7px; border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-weight: 700; font-size: .86rem; color: var(--muted); max-width: 100%; }
+.cal-toggle span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal-toggle i { width: 12px; height: 12px; border-radius: 4px; border: 2px solid var(--c); flex: none; }
+.cal-toggle[aria-pressed="true"] { color: var(--ink); border-color: color-mix(in srgb, var(--c) 60%, var(--line)); }
+.cal-toggle[aria-pressed="true"] i { background: var(--c); }
 .allday { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .allday .lbl { font-size: .74rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
 .ev-chip { border: 1.5px dashed var(--muted); background: var(--surface); border-radius: 999px; padding: 4px 10px; font-weight: 700; font-size: .82rem; color: var(--ink); }
@@ -1027,6 +1035,7 @@ body.fs-on .tabbar { display: none; }
       </div>
       <div class="tally" id="tlSummary"></div>
       <div class="gcal-bar" id="gcalBar"></div>
+      <div class="gcal-cals" id="gcalCals" hidden></div>
       <div class="allday" id="tlAllDay"></div>
       <div class="unsched" id="tlUnsched"></div>
       <div class="tl-scroll" id="tlScroll"><div class="tl" id="tl"></div></div>
@@ -1333,7 +1342,7 @@ body.fs-on .tabbar { display: none; }
     const t = todayKey();
     return {
       v: 2, updatedAt: 0,
-      settings: { focus: 25, short: 5, long: 15, every: 4, goal: 6, autoBreak: true, autoFocus: false, sound: true, wake: true, theme: 'auto', palette: 'berry', fontTheme: 'cozy', currency: 'CAD', budget: 0 },
+      settings: { focus: 25, short: 5, long: 15, every: 4, goal: 6, autoBreak: true, autoFocus: false, sound: true, wake: true, theme: 'auto', palette: 'berry', fontTheme: 'cozy', currency: 'CAD', budget: 0, gcalHidden: [], gcalKnown: [] },
       days: { [t]: [
         { id: uid(), text: 'Review lecture notes', mins: 50, start: '09:30', est: 2, pomos: 1, spent: 25, done: false, sample: true },
         { id: uid(), text: 'Finish lab exercises', mins: 75, start: '13:00', est: 3, pomos: 0, spent: 0, done: false, sample: true },
@@ -2171,7 +2180,11 @@ body.fs-on .tabbar { display: none; }
         if (r.status === 401) throw 401;
         if (r.status === 403) throw 403;
         const j = await r.json();
-        gcal.cals = (j.items || []).filter(c => c.selected !== false && !c.hidden).slice(0, 12).map(c => ({ id: c.id, color: c.backgroundColor || '#7a8a9c' }));
+        gcal.cals = (j.items || []).filter(c => !c.hidden).slice(0, 25).map(c => ({ id: c.id, color: c.backgroundColor || '#7a8a9c', name: c.summaryOverride || c.summary || 'Calendar', primary: !!c.primary }));
+        const known = S.settings.gcalKnown || [], hidden = S.settings.gcalHidden || [];
+        let changed = false;
+        (j.items || []).forEach(c => { if (!known.includes(c.id)) { known.push(c.id); changed = true; if (c.selected === false && !hidden.includes(c.id)) hidden.push(c.id); } });
+        if (changed) { S.settings.gcalKnown = known; S.settings.gcalHidden = hidden; save(); }
       }
       const all = [];
       await Promise.all(gcal.cals.map(async c => {
@@ -2183,11 +2196,11 @@ body.fs-on .tabbar { display: none; }
         (j.items || []).forEach(ev => {
           if (ev.status === 'cancelled') return;
           const title = ev.summary || '(no title)';
-          if (ev.start && ev.start.date) { all.push({ id: ev.id, title, allDay: true, color: c.color }); return; }
+          if (ev.start && ev.start.date) { all.push({ id: ev.id, title, allDay: true, color: c.color, cal: c.id }); return; }
           const st = new Date(ev.start.dateTime), en = new Date(ev.end.dateTime);
           const sMin = st < d0 ? 0 : st.getHours() * 60 + st.getMinutes();
           const eMin = en >= d1 ? 1440 : en.getHours() * 60 + en.getMinutes();
-          all.push({ id: ev.id, title, s: sMin, e: Math.max(eMin, sMin + 15), color: c.color });
+          all.push({ id: ev.id, title, s: sMin, e: Math.max(eMin, sMin + 15), color: c.color, cal: c.id });
         });
       }));
       gcal.cache[day] = { at: Date.now(), events: all };
@@ -2199,28 +2212,51 @@ body.fs-on .tabbar { display: none; }
       if (tab === 'timeline') renderTimeline();
     }
   }
+  let calPickerOpen = false;
   function renderGcalBar() {
-    const bar = $('gcalBar'); bar.innerHTML = '';
-    const txt = document.createElement('span');
-    const btn = document.createElement('button');
-    if (!configured) { bar.hidden = true; return; }
+    const bar = $('gcalBar'), pk = $('gcalCals'); bar.innerHTML = ''; pk.innerHTML = '';
+    if (!configured) { bar.hidden = true; pk.hidden = true; return; }
     bar.hidden = false;
+    const txt = document.createElement('span'), acts = document.createElement('span'); acts.className = 'acts';
+    const hidden = S.settings.gcalHidden || [];
     if (gcalLive()) {
       const n = (gcal.cache[viewDay] || {}).events;
-      txt.innerHTML = `Google Calendar <span class="muted">· ${n ? n.length + ' event' + (n.length === 1 ? '' : 's') + ' this day' : 'loading…'}</span>`;
-      btn.className = 'link-btn'; btn.textContent = 'Disconnect';
-      btn.onclick = () => { dropGcal(true); renderTimeline(); };
-    } else if (gcalWanted()) {
-      txt.innerHTML = 'Google Calendar <span class="muted">· tap to refresh (Google asks every hour)</span>';
-      btn.className = 'btn-ghost'; btn.textContent = 'Refresh';
-      btn.onclick = connectGcal;
+      const shown = n ? n.filter(ev => !hidden.includes(ev.cal)).length : 0;
+      txt.innerHTML = `Google Calendar <span class="muted">· ${n ? shown + ' event' + (shown === 1 ? '' : 's') + ' shown' : 'loading…'}</span>`;
+      const pick = document.createElement('button'); pick.className = 'link-btn';
+      pick.textContent = calPickerOpen ? 'Done' : 'Choose calendars';
+      pick.setAttribute('aria-expanded', String(calPickerOpen));
+      pick.onclick = () => { calPickerOpen = !calPickerOpen; renderGcalBar(); };
+      const off = document.createElement('button'); off.className = 'link-btn'; off.textContent = 'Disconnect';
+      off.onclick = () => { dropGcal(true); calPickerOpen = false; renderTimeline(); };
+      acts.append(pick, off);
+      pk.hidden = !calPickerOpen || !gcal.cals;
+      if (calPickerOpen && gcal.cals) {
+        const h = document.createElement('div'); h.className = 'hint'; h.textContent = 'Tap a calendar to show or hide it on your timeline.';
+        pk.appendChild(h);
+        gcal.cals.slice().sort((a, b) => (b.primary - a.primary) || a.name.localeCompare(b.name)).forEach(c => {
+          const on = !hidden.includes(c.id);
+          const b = document.createElement('button'); b.className = 'cal-toggle'; b.style.setProperty('--c', c.color);
+          b.setAttribute('aria-pressed', String(on));
+          b.innerHTML = '<i></i><span></span>'; b.querySelector('span').textContent = c.name;
+          b.onclick = () => {
+            const list = S.settings.gcalHidden = (S.settings.gcalHidden || []).slice();
+            const i = list.indexOf(c.id); if (i >= 0) list.splice(i, 1); else list.push(c.id);
+            save(); renderTimeline();
+          };
+          pk.appendChild(b);
+        });
+      }
     } else {
-      txt.innerHTML = 'See your Google Calendar events here';
-      btn.className = 'btn-ghost'; btn.textContent = 'Connect';
-      btn.onclick = connectGcal;
+      pk.hidden = true;
+      const btn = document.createElement('button'); btn.className = 'btn-ghost'; btn.onclick = connectGcal;
+      if (gcalWanted()) { txt.innerHTML = 'Google Calendar <span class="muted">· tap to refresh (Google asks every hour)</span>'; btn.textContent = 'Refresh'; }
+      else { txt.innerHTML = 'See your Google Calendar events here'; btn.textContent = 'Connect'; }
+      acts.append(btn);
     }
-    bar.append(txt, btn);
+    bar.append(txt, acts);
   }
+
 
   // ---------- timeline ----------
   const PPM = 1.2;
@@ -2230,7 +2266,8 @@ body.fs-on .tabbar { display: none; }
     $('tlTitle').textContent = isToday ? 'Your day' : 'The plan';
     renderGcalBar();
     if (gcalLive()) loadGcal(viewDay);
-    const events = gcalLive() ? ((gcal.cache[viewDay] || {}).events || []) : [];
+    const hiddenCals = S.settings.gcalHidden || [];
+    const events = gcalLive() ? ((gcal.cache[viewDay] || {}).events || []).filter(ev => !hiddenCals.includes(ev.cal)) : [];
     const ad = $('tlAllDay'); ad.innerHTML = '';
     const allDay = events.filter(e => e.allDay);
     if (allDay.length) {
