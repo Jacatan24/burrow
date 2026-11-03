@@ -699,6 +699,9 @@ body.fs-on .tabbar { display: none; }
 .snd:not(.on) input[type=range] { display: none; }
 #sndMaster { accent-color: var(--timer-ink); }
 #soundBtn.playing::after { content: " ♪"; }
+.backup-list { display: grid; gap: 6px; }
+.backup-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 8px 10px; border-radius: 12px; background: var(--surface-2); font-size: .9rem; }
+.task-carried { font-size: .74rem; font-weight: 800; color: var(--muted); }
 /* look settings */
 .look { display: grid; gap: 12px; }
 .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
@@ -1254,6 +1257,13 @@ body.fs-on .tabbar { display: none; }
       </div>
       <div class="toggles"><label for="setNotifyTimer">When a focus session or break ends <input type="checkbox" id="setNotifyTimer"></label></div>
     </section>
+    <section class="card pad settings" id="backupCard">
+      <h2>Your data</h2>
+      <div class="toggles"><label for="setCarry">Move unfinished tasks to the next day <input type="checkbox" id="setCarry"></label></div>
+      <h3 style="margin:6px 0 8px">Backups</h3>
+      <p class="muted" style="margin:0 0 8px">Burrow saves a copy of everything once a day. Restoring adds back anything missing and keeps what's newer.</p>
+      <div class="backup-list" id="backupList"></div>
+    </section>
     <section class="card pad settings" id="gcalCard">
       <h2>Google Calendar</h2>
       <p class="muted" style="margin:0 0 10px">Show your Google Calendar events on the Timeline. Pick which calendars appear.</p>
@@ -1498,7 +1508,7 @@ body.fs-on .tabbar { display: none; }
     const t = todayKey();
     return {
       v: 2, updatedAt: 0,
-      settings: { focus: 25, short: 5, long: 15, every: 4, goal: 6, autoBreak: true, autoFocus: false, sound: true, wake: true, theme: 'auto', palette: 'berry', fontTheme: 'cozy', currency: 'CAD', budget: 0, gcalHidden: [], gcalKnown: [], notifyTimer: true, notifyLead: 5, outline: 'theme', fill: 'theme', sounds: {}, soundVol: 0.7, soundAuto: true },
+      settings: { focus: 25, short: 5, long: 15, every: 4, goal: 6, autoBreak: true, autoFocus: false, sound: true, wake: true, theme: 'auto', palette: 'berry', fontTheme: 'cozy', currency: 'CAD', budget: 0, gcalHidden: [], gcalKnown: [], notifyTimer: true, notifyLead: 5, carryOver: true, outline: 'theme', fill: 'theme', sounds: {}, soundVol: 0.7, soundAuto: true },
       days: { [t]: [
         { id: uid(), text: 'Review lecture notes', mins: 50, start: '09:30', est: 2, pomos: 1, spent: 25, done: false, sample: true },
         { id: uid(), text: 'Finish lab exercises', mins: 75, start: '13:00', est: 3, pomos: 0, spent: 0, done: false, sample: true },
@@ -1528,6 +1538,7 @@ body.fs-on .tabbar { display: none; }
     s.stats.byDay = s.stats.byDay || {};
     s.flags = s.flags || {};
     s.ach = s.ach || {};
+    s.tomb = s.tomb && typeof s.tomb === 'object' ? s.tomb : {};
     s.v = 2; s.updatedAt = s.updatedAt || 0;
     return s;
   }
@@ -1554,8 +1565,52 @@ body.fs-on .tabbar { display: none; }
   };
   const FB = 'https://www.gstatic.com/firebasejs/12.14.0/';
   const configured = !String(FIREBASE_CONFIG.apiKey).startsWith('PASTE');
+  let firstMerge = false;
   let fb = null, authUser = null, ref = null, unsub = null, pushTimer = null, writing = Promise.resolve(), gotServer = false;
   function setSync(state, label) { $('syncChip').dataset.state = state; $('syncLbl').textContent = label; }
+  // Remember deleted things so syncing never brings them back
+  function forget(id) { if (id) S.tomb[id] = Date.now(); }
+  // Combine two copies of your data so nothing gets lost when devices disagree.
+  function mergeStates(a, b) {
+    a = ensureShape(clone(a)); b = ensureShape(clone(b));
+    const newer = (b.updatedAt || 0) >= (a.updatedAt || 0) ? b : a, older = newer === a ? b : a;
+    const m = clone(newer);
+    const tomb = Object.assign({}, older.tomb, newer.tomb);
+    const cutoff = Date.now() - 90 * 864e5; for (const k in tomb) if (tomb[k] < cutoff) delete tomb[k];
+    m.tomb = tomb;
+    const dead = id => id && tomb[id];
+    for (const k in m.days) m.days[k] = (m.days[k] || []).filter(x => !dead(x.id));
+    m.inbox = m.inbox.filter(x => !dead(x.id));
+    const seen = new Set(); for (const k in m.days) m.days[k].forEach(x => seen.add(x.id)); m.inbox.forEach(x => seen.add(x.id));
+    for (const k in older.days) (older.days[k] || []).forEach(x => { if (!x || seen.has(x.id) || dead(x.id)) return; (m.days[k] = m.days[k] || []).push(x); seen.add(x.id); });
+    older.inbox.forEach(x => { if (!x || seen.has(x.id) || dead(x.id)) return; m.inbox.push(x); seen.add(x.id); });
+    const eids = new Set(m.expenses.map(e => e.id)); m.expenses = m.expenses.filter(e => !dead(e.id));
+    older.expenses.forEach(e => { if (e && !eids.has(e.id) && !dead(e.id)) m.expenses.push(e); });
+    older.owned.forEach(id => { if (!m.owned.includes(id)) m.owned.push(id); });
+    for (const k in older.ach) m.ach[k] = m.ach[k] ? Math.min(m.ach[k], older.ach[k]) : older.ach[k];
+    for (const k in older.flags) m.flags[k] = m.flags[k] || older.flags[k];
+    for (const d in older.quests) { const q = m.quests[d] = m.quests[d] || { claimed: [] }; (older.quests[d].claimed || []).forEach(id => { if (!q.claimed.includes(id)) q.claimed.push(id); }); }
+    for (const d in older.log) m.log[d] = Math.max(m.log[d] || 0, older.log[d] || 0);
+    for (const d in older.stats.byDay) m.stats.byDay[d] = Math.max(m.stats.byDay[d] || 0, older.stats.byDay[d] || 0);
+    ['sessions', 'tasksDone', 'bestStreak'].forEach(k => { m.stats[k] = Math.max(m.stats[k] || 0, older.stats[k] || 0); });
+    for (const d in older.dayStats) { const x = m.dayStats[d] = m.dayStats[d] || {}; for (const f in older.dayStats[d]) x[f] = Math.max(x[f] || 0, older.dayStats[d][f] || 0); }
+    m.wallet.earned = Math.max(m.wallet.earned || 0, older.wallet.earned || 0);
+    m.wallet.spent = Math.max(m.wallet.spent || 0, older.wallet.spent || 0);
+    m.updatedAt = Math.max(a.updatedAt || 0, b.updatedAt || 0);
+    return m;
+  }
+  const sameData = (x, y) => { try { const a = clone(x), b = clone(y); delete a.updatedAt; delete b.updatedAt; return JSON.stringify(a) === JSON.stringify(b); } catch (e) { return false; } };
+
+  // ---------- backups (one a day, last 14 kept on this device and in your account) ----------
+  function backupNow(reason) {
+    const k = todayKey(), key = 'burrow.backup.' + k;
+    try {
+      if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify({ at: Date.now(), reason, state: S }));
+      const keys = Object.keys(localStorage).filter(x => x.startsWith('burrow.backup.')).sort();
+      while (keys.length > 14) localStorage.removeItem(keys.shift());
+    } catch (e) {}
+    if (fb && authUser) { const d = fb.doc(fb.db, 'users', authUser.uid, 'backups', k); fb.getDoc(d).then(sn => { if (!sn.exists()) return fb.setDoc(d, { at: Date.now(), state: clone(S) }); }).catch(() => {}); }
+  }
   function save() {
     S.updatedAt = Date.now();
     saveLocal();
@@ -1570,7 +1625,7 @@ body.fs-on .tabbar { display: none; }
   }
   function attach(user) {
     if (unsub) { unsub(); unsub = null; }
-    ref = null; gotServer = false;
+    ref = null; gotServer = false; firstMerge = false;
     if (!user) { setSync('local', 'Sign in'); return; }
     ref = fb.doc(fb.db, 'users', user.uid);
     setSync('saving', 'Connecting');
@@ -1580,10 +1635,15 @@ body.fs-on .tabbar { display: none; }
       if (snap.metadata.hasPendingWrites) return;
       if (!snap.exists()) { if (!snap.metadata.fromCache) { S.updatedAt = S.updatedAt || Date.now(); push(); } return; }
       const r = snap.data() || {};
-      const remoteAt = Number(r.updatedAt) || 0;
-      if (r.state && remoteAt > (S.updatedAt || 0)) {
-        S = ensureShape(clone(r.state)); S.updatedAt = remoteAt; saveLocal(); renderAll();
-      } else if (remoteAt < (S.updatedAt || 0) && !snap.metadata.fromCache) { push(); return; }
+      if (r.state) {
+        if (!firstMerge) { firstMerge = true; backupNow('before sync'); }
+        const remote = ensureShape(clone(r.state)); remote.updatedAt = Number(r.updatedAt) || remote.updatedAt || 0;
+        const merged = mergeStates(S, remote);
+        const changedLocal = !sameData(merged, S), differsRemote = !sameData(merged, remote);
+        S = merged; saveLocal();
+        if (changedLocal) { rollover(); renderAll(); }
+        if (differsRemote && !snap.metadata.fromCache) { S.updatedAt = Date.now(); saveLocal(); push(); return; }
+      }
       if (gotServer) setSync('synced', 'Synced');
     }, () => { clearTimeout(timeout); setSync('offline', 'Offline'); });
   }
@@ -2046,7 +2106,7 @@ body.fs-on .tabbar { display: none; }
       const seeds = document.createElement('span'); seeds.className = 'task-seeds';
       const est = estOf(x), mins = x.mins || S.settings.focus;
       seeds.innerHTML = Array.from({ length: Math.min(Math.max(est, x.pomos), 12) }, (_, i) => seedSvg(i < x.pomos ? 'full' : 'empty')).join('') +
-        `<span>${x.start ? fmtClock(toMin(x.start)) + ' · ' : ''}${fmtDur(x.spent || 0)} of ${fmtDur(mins)}</span>`;
+        `<span>${x.start ? fmtClock(toMin(x.start)) + ' · ' : ''}${fmtDur(x.spent || 0)} of ${fmtDur(mins)}${x.carried && viewDay === todayKey() && x.carried < viewDay ? ' · from ' + dayLabel(x.carried).toLowerCase() : ''}</span>`;
       main.append(txt, seeds);
       const fb = document.createElement('button');
       fb.className = 'icon-btn focus-btn'; fb.setAttribute('aria-label', current ? 'Stop focusing on this task' : 'Focus on this task');
@@ -2060,7 +2120,7 @@ body.fs-on .tabbar { display: none; }
       const del = document.createElement('button');
       del.className = 'icon-btn'; del.setAttribute('aria-label', 'Delete task');
       del.innerHTML = '<svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg>';
-      del.onclick = () => { list.splice(list.indexOf(x), 1); if (current) { t.taskId = null; t.taskDay = null; } save(); renderTimer(); renderTasks(); };
+      del.onclick = () => { forget(x.id); list.splice(list.indexOf(x), 1); if (current) { t.taskId = null; t.taskDay = null; } save(); renderTimer(); renderTasks(); };
       li.append(chk, main, fb, del);
       const subs = x.subs || [];
       if (subs.length) {
@@ -2104,7 +2164,7 @@ body.fs-on .tabbar { display: none; }
       const sp = document.createElement('span'); sp.textContent = 'These are sample tasks. They don’t earn seeds.';
       const b = document.createElement('button'); b.className = 'link-btn'; b.textContent = 'Clear samples';
       b.onclick = () => {
-        for (const k in S.days) S.days[k] = S.days[k].filter(x => !x.sample);
+        for (const k in S.days) { S.days[k].filter(x => x.sample).forEach(x => forget(x.id)); S.days[k] = S.days[k].filter(x => !x.sample); }
         if (!(t.taskId && findTask(t.taskId, t.taskDay))) { t.taskId = null; t.taskDay = null; }
         save(); renderTimer(); renderTasks();
       };
@@ -2114,6 +2174,7 @@ body.fs-on .tabbar { display: none; }
   const renderEst = () => { $('estOut').textContent = fmtDur(addMins); $('estOut').setAttribute('aria-label', `${addMins} minutes`); };
   function renderSettings() {
     const s = S.settings;
+    $('setCarry').checked = s.carryOver !== false;
     $('setNotifyLead').value = String(s.notifyLead ?? 5); $('setNotifyTimer').checked = s.notifyTimer !== false;
     try { renderNotify(); } catch (e) {}
     $('setBudget').value = s.budget || ''; $('setCurrency').value = s.currency || 'CAD';
@@ -2833,7 +2894,7 @@ body.fs-on .tabbar { display: none; }
     if (S.inbox.some(x => x.done)) {
       const li = document.createElement('li'); li.style.cssText = 'display:block;background:transparent;box-shadow:none;padding:0';
       const b = document.createElement('button'); b.className = 'link-btn'; b.textContent = 'Clear finished';
-      b.onclick = () => { S.inbox = S.inbox.filter(x => !x.done); save(); refreshInbox(); };
+      b.onclick = () => { S.inbox.filter(x => x.done).forEach(x => forget(x.id)); S.inbox = S.inbox.filter(x => !x.done); save(); refreshInbox(); };
       li.appendChild(b); ul.appendChild(li);
     }
   }
@@ -3067,7 +3128,7 @@ Reply with JSON only: {"steps":["..."]}`;
   function renderPage() {
     const n = openPageName;
     if (n === 'shop') renderShop();
-    if (n === 'settings') { renderLookPicker(); renderNotify(); renderGcalBar(); }
+    if (n === 'settings') { renderLookPicker(); renderNotify(); renderGcalBar(); renderBackups(); }
     renderTab();
   }
   function showTab(name) {
@@ -3431,7 +3492,7 @@ Reply with JSON only: {"steps":["..."]}`;
     $('taskSheet').close(); save(); renderAll();
   });
   $('tsDelete').onclick = () => {
-    const list = listOf(sheetDay), i = list.indexOf(sheetTask); if (i >= 0) list.splice(i, 1);
+    const list = listOf(sheetDay), i = list.indexOf(sheetTask); if (i >= 0) list.splice(i, 1); if (sheetTask) forget(sheetTask.id);
     const t = T(); if (sheetTask && t.taskId === sheetTask.id) { t.taskId = null; t.taskDay = null; }
     $('taskSheet').close(); save(); renderAll();
   };
@@ -3760,16 +3821,80 @@ Reply with JSON only: {"steps":["..."]}`;
   });
   $('expDelete').onclick = () => {
     if (!expEdit) return;
-    const i = S.expenses.indexOf(expEdit); if (i >= 0) S.expenses.splice(i, 1);
+    const i = S.expenses.indexOf(expEdit); if (i >= 0) S.expenses.splice(i, 1); forget(expEdit.id);
     if (expEdit.photo) delPhoto(expEdit.id);
     $('expSheet').close(); save(); renderMoney(); toast('Expense deleted');
   };
   $('monPrev').onclick = () => { const [y, m] = monMonth.split('-').map(Number); const d = new Date(y, m - 2, 1); monMonth = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; renderMoney(); };
   $('monNext').onclick = () => { const [y, m] = monMonth.split('-').map(Number); const d = new Date(y, m, 1); monMonth = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; renderMoney(); };
   $('setBudget').addEventListener('change', e => { const v = Math.max(0, Math.round(Number(e.target.value) || 0)); S.settings.budget = v; e.target.value = v || ''; save(); renderMoney(); });
+  $('setCarry').addEventListener('change', e => { S.settings.carryOver = e.target.checked; if (e.target.checked) { S.lastRoll = null; rollover(); } save(); renderAll(); });
   $('setCurrency').addEventListener('change', e => { S.settings.currency = e.target.value; save(); renderMoney(); });
 
+  // ---------- new day: carry unfinished tasks forward ----------
+  let curDay = todayKey();
+  function rollover() {
+    if (S.settings.carryOver === false) return 0;
+    const today = todayKey(); if (S.lastRoll === today) return 0;
+    let n = 0; const dest = listOf(today);
+    Object.keys(S.days).filter(k => k < today && k >= shiftKey(today, -30)).sort().forEach(k => {
+      const keep = [];
+      S.days[k].forEach(x => { if (!x.done && !x.sample) { x.carried = x.carried || k; dest.push(x); n++; const t = T(); if (t.taskId === x.id) t.taskDay = today; } else keep.push(x); });
+      S.days[k] = keep;
+    });
+    S.lastRoll = today;
+    if (n) { save(); setTimeout(() => toast(`Moved ${n} unfinished task${n === 1 ? '' : 's'} to today`), 600); }
+    return n;
+  }
+  function checkNewDay() {
+    const k = todayKey(); if (k === curDay) return;
+    const was = curDay; curDay = k;
+    if (viewDay === was) viewDay = k;
+    backupNow('new day'); rollover(); renderAll();
+  }
+  setInterval(checkNewDay, 30000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkNewDay(); });
+
+  // ---------- restore from a backup ----------
+  async function listBackups() {
+    const out = {};
+    try { Object.keys(localStorage).filter(x => x.startsWith('burrow.backup.')).forEach(k => { const v = JSON.parse(localStorage.getItem(k)); out[k.slice(14)] = { where: 'this device', state: v.state, at: v.at }; }); } catch (e) {}
+    if (fb && authUser) {
+      for (let i = 0; i < 14; i++) {
+        const d = shiftKey(todayKey(), -i); if (out[d]) continue;
+        try { const sn = await fb.getDoc(fb.doc(fb.db, 'users', authUser.uid, 'backups', d)); if (sn.exists()) out[d] = { where: 'your account', state: sn.data().state, at: sn.data().at }; } catch (e) { break; }
+      }
+    }
+    return out;
+  }
+  async function renderBackups() {
+    const host = $('backupList'); host.innerHTML = '<p class="muted" style="margin:0">Looking for backups…</p>';
+    const all = await listBackups(); host.innerHTML = '';
+    const keys = Object.keys(all).sort().reverse();
+    if (!keys.length) { host.innerHTML = '<p class="muted" style="margin:0">No backups yet. Burrow makes one each day you open it.</p>'; return; }
+    keys.forEach(k => {
+      const b = all[k], st = ensureShape(clone(b.state || {}));
+      const tasks = Object.values(st.days).reduce((a, l) => a + l.length, 0) + st.inbox.length;
+      const row = document.createElement('div'); row.className = 'backup-row';
+      const info = document.createElement('span');
+      info.innerHTML = '<b></b><span class="muted"></span>';
+      info.querySelector('b').textContent = dayLabel(k);
+      info.querySelector('.muted').textContent = ` · ${tasks} task${tasks === 1 ? '' : 's'} · ${st.expenses.length} expense${st.expenses.length === 1 ? '' : 's'} · ${b.where}`;
+      const btn = document.createElement('button'); btn.className = 'btn-ghost'; btn.textContent = 'Restore';
+      btn.onclick = () => {
+        if (btn.dataset.sure !== '1') { btn.dataset.sure = '1'; btn.textContent = 'Tap again to restore'; return; }
+        backupNow('before restore');
+        const merged = mergeStates(st, S); S = merged; S.updatedAt = Date.now();
+        save(); renderAll(); toast(`Restored from ${dayLabel(k).toLowerCase()} (anything newer was kept too)`);
+        renderBackups();
+      };
+      row.append(info, btn); host.appendChild(row);
+    });
+  }
+
   // ---------- boot ----------
+  backupNow('open');
+  rollover();
   addMins = Number(S.settings.focus) || 25;
   document.querySelectorAll('#tabbar button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
   renderEst(); renderAll(); fitScene();
