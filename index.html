@@ -898,6 +898,33 @@ body.bulk-on .fab { display: none; }
 .h-quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .h-quick button { min-height: 46px; border-radius: 14px; }
 .home .c-tr { z-index: 6; }
+/* actual time + home layout */
+.actual-bar { position: fixed; left: 0; right: 0; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); z-index: 37; margin: 0 auto; max-width: 520px; display: grid; gap: 8px;
+  padding: 12px max(14px, env(safe-area-inset-right, 0px)) 14px max(14px, env(safe-area-inset-left, 0px)); background: var(--surface); border-radius: 18px; box-shadow: 0 10px 30px -10px rgba(0,0,0,.4); border: 1px solid var(--line); animation: toastIn .25s ease-out; }
+body.fs-on .actual-bar { bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+.ab-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-weight: 800; }
+.ab-top .sheet-close { width: 30px; height: 30px; flex: none; }
+.ab-opts { display: flex; gap: 6px; flex-wrap: wrap; }
+.ab-opts button { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 7px 13px; font-weight: 800; font-size: .86rem; color: var(--ink); }
+.ab-opts button.main { background: var(--timer-ink); color: var(--accent-ink); border-color: var(--timer-ink); }
+.ab-other { display: flex; gap: 8px; }
+.ab-other input { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); padding: 10px 12px; font-weight: 700; color: var(--ink); }
+.field .opt { text-transform: none; letter-spacing: 0; font-weight: 600; }
+.took { font-weight: 800; }
+.took.over { color: var(--accent); } .took.under { color: var(--leaf); }
+.home-head { align-items: center; }
+.home-edit { border: 0; background: transparent; color: var(--timer-ink); font-weight: 800; font-size: .95rem; padding: 6px 2px; }
+.home-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.home-cards > * { grid-column: 1 / -1; }
+.home-cards > .h-mini:not(.solo) { grid-column: auto; }
+.arrange { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.arrange li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 6px; align-items: center; padding: 8px 10px; border-radius: 14px; background: var(--surface-2); }
+.arrange li.off .an { opacity: .45; }
+.arrange .an { font-weight: 800; display: grid; }
+.arrange .an small { font-weight: 600; color: var(--muted); font-size: .78rem; }
+.arrange .mv { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 1rem; font-weight: 800; color: var(--ink); }
+.arrange .mv:disabled { opacity: .3; }
+.arrange input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--timer-ink); }
 /* look settings */
 .look { display: grid; gap: 12px; }
 .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
@@ -1270,10 +1297,11 @@ body.bulk-on .fab { display: none; }
 
 <!-- HOME -->
 <section class="page tab" id="page-home" hidden aria-labelledby="ttl-home">
-  <div class="tab-head home-head"><h1 id="ttl-home"><span id="homeHello">Hello</span></h1></div>
+  <div class="tab-head home-head"><h1 id="ttl-home"><span id="homeHello">Hello</span></h1><button class="home-edit" id="homeEdit">Edit</button></div>
   <div class="page-body home-body">
     <p class="muted home-date" id="homeDate"></p>
-    <button class="hcard h-focus" id="hFocus" aria-label="Open focus">
+    <div class="home-cards" id="homeCards">
+    <button class="hcard h-focus" id="hFocus" data-card="focus" aria-label="Open focus">
       <span class="hf-scene" id="hfScene"></span>
       <span class="hf-info">
         <span class="hf-mode" id="hfMode">Focus</span>
@@ -1283,30 +1311,31 @@ body.bulk-on .fab { display: none; }
         <span class="hf-go" id="hfGo">Start focus ›</span>
       </span>
     </button>
-    <section class="hcard">
+    <section class="hcard" data-card="next">
       <div class="hc-head"><h3>Up next</h3><button class="link-btn" data-go="todos">See all ›</button></div>
       <ul class="h-list" id="hNext"></ul>
     </section>
-    <section class="hcard">
+    <section class="hcard" data-card="schedule">
       <div class="hc-head"><h3>Schedule</h3><button class="link-btn" data-go="timeline">Timeline ›</button></div>
       <ul class="h-list" id="hSched"></ul>
     </section>
-    <div class="h-grid">
-      <button class="hcard h-mini" id="hMoney"><span class="hm-l">Spent this week</span><b id="hmWeek"></b><span class="hm-s" id="hmBudget"></span></button>
-      <button class="hcard h-mini" id="hIou"><span class="hm-l">IOUs</span><b id="hmIouIn"></b><span class="hm-s" id="hmIouOut"></span></button>
-    </div>
-    <section class="hcard" id="hDueCard" hidden>
+      <button class="hcard h-mini" id="hMoney" data-card="money"><span class="hm-l">Spent this week</span><b id="hmWeek"></b><span class="hm-s" id="hmBudget"></span></button>
+      <button class="hcard h-mini" id="hIou" data-card="ious"><span class="hm-l">IOUs</span><b id="hmIouIn"></b><span class="hm-s" id="hmIouOut"></span></button>
+    <section class="hcard" id="hDueCard" data-card="due" hidden>
       <div class="hc-head"><h3>Coming up</h3><button class="link-btn" data-go-money="subs">Subscriptions ›</button></div>
       <ul class="h-list" id="hDue"></ul>
     </section>
-    <section class="hcard" id="hGoalsCard" hidden>
+    <section class="hcard" id="hGoalsCard" data-card="goals" hidden>
       <div class="hc-head"><h3>Savings</h3><button class="link-btn" data-go-money="goals">Goals ›</button></div>
       <div id="hGoals" class="h-goals"></div>
     </section>
-    <div class="h-quick">
+    <div class="h-quick" data-card="quick">
       <button class="btn-ghost" id="qTask">+ Task</button>
       <button class="btn-ghost" id="qExp">+ Expense</button>
       <button class="btn-ghost" id="qIou">+ IOU</button>
+    </div>
+    <button class="hcard h-mini" id="hInbox" data-card="inbox"><span class="hm-l">Inbox</span><b id="hmInbox"></b><span class="hm-s">tasks waiting for a day</span></button>
+    <button class="hcard h-mini" id="hSubsMini" data-card="subsmini"><span class="hm-l">Subscriptions</span><b id="hmSubs"></b><span class="hm-s">per month</span></button>
     </div>
   </div>
 </section>
@@ -1538,6 +1567,7 @@ body.bulk-on .fab { display: none; }
     <div class="set-panel" id="panel-customize" hidden>
       <button class="set-back" data-back>‹ Settings</button>
       <h2 class="set-title">Customize</h2>
+      <button class="btn-ghost" id="arrangeHomeBtn" style="justify-self:start">Arrange Home screen</button>
       <h3>Preset themes</h3>
       <div class="presets" id="presetList" role="group" aria-label="Preset themes"></div>
       <div class="set-grid">
@@ -1576,7 +1606,7 @@ body.bulk-on .fab { display: none; }
     <div class="set-panel" id="panel-tasks" hidden>
       <button class="set-back" data-back>‹ Settings</button>
       <h2 class="set-title">Tasks</h2>
-      <div class="toggles"><label for="setCarry">Move unfinished tasks to the next day <input type="checkbox" id="setCarry"></label></div>
+      <div class="toggles"><label for="setCarry">Move unfinished tasks to the next day <input type="checkbox" id="setCarry"></label><label for="setAskActual">Ask how long a task took when I finish it <input type="checkbox" id="setAskActual"></label></div>
       <h3 style="margin-top:6px">Tags</h3>
       <p class="muted" style="margin:0">Colour-code tasks with tags like a course or project. Add tags from any task, or here.</p>
       <ul class="cat-edit" id="tagList"></ul>
@@ -1633,6 +1663,9 @@ body.bulk-on .fab { display: none; }
         <button type="button" data-m="45">45m</button><button type="button" data-m="60">1h</button><button type="button" data-m="90">1h 30m</button><button type="button" data-m="120">2h</button>
       </div>
       <label class="inline-num" for="tsMins"><input type="number" id="tsMins" min="5" max="600" step="5"> minutes</label>
+    </div>
+    <div class="field"><label for="tsActual">Actual time it took <span class="opt">(optional)</span></label>
+      <div class="row-inline"><label class="inline-num" for="tsActual" style="flex:1"><input type="number" id="tsActual" min="1" max="900" step="1" placeholder="—"> minutes</label><button type="button" class="link-btn" id="tsActualClear">Clear</button></div>
     </div>
     <div class="field"><label for="tsDate">Day</label>
       <div class="row-inline"><input type="date" id="tsDate"><button type="button" class="link-btn" id="tsToInbox">Move to inbox</button></div>
@@ -1743,6 +1776,11 @@ body.bulk-on .fab { display: none; }
   </div>
 </dialog>
 
+<div class="actual-bar" id="actualBar" hidden role="dialog" aria-label="How long did it take?">
+  <div class="ab-top"><span id="abQ"></span><button class="sheet-close" id="abClose" aria-label="Skip">×</button></div>
+  <div class="ab-opts" id="abOpts"></div>
+  <form class="ab-other" id="abOther" hidden><input type="number" id="abMins" min="1" max="900" placeholder="Minutes" aria-label="Minutes it took"><button class="btn-dark" type="submit">Save</button></form>
+</div>
 <div class="bulkbar" id="bulkBar" hidden>
   <div class="bulk-top"><b id="bulkCount">0 selected</b><button class="link-btn" id="bulkAll">Select all</button><button class="link-btn" id="bulkCancel">Cancel</button></div>
   <div class="bulk-acts" id="bulkActs"></div>
@@ -1808,6 +1846,14 @@ body.bulk-on .fab { display: none; }
     <p class="ai-summary" id="splitPreview"></p>
     <div class="row2"><button type="submit" class="btn-accent">Create IOUs</button></div>
   </form>
+</dialog>
+<dialog class="sheet" id="homeSheet" aria-labelledby="homeSheetTitle">
+  <div class="sheet-body">
+    <div class="sheet-top"><h2 id="homeSheetTitle">Arrange Home</h2><button type="button" class="sheet-close" id="homeSheetClose" aria-label="Close">×</button></div>
+    <p class="muted" style="margin:0">Use the arrows to move cards up or down. Untick a card to hide it. Small cards sit side by side when they're next to each other.</p>
+    <ul class="arrange" id="arrangeList"></ul>
+    <button type="button" class="link-btn" id="homeReset" style="justify-self:start">Reset to default</button>
+  </div>
 </dialog>
 <dialog class="sheet" id="bulkSheet" aria-labelledby="bulkTitle">
   <div class="sheet-body">
@@ -1933,7 +1979,7 @@ body.bulk-on .fab { display: none; }
     const t = todayKey();
     return {
       v: 2, updatedAt: 0,
-      settings: { focus: 25, short: 5, long: 15, every: 4, goal: 6, autoBreak: true, autoFocus: false, sound: true, wake: true, theme: 'auto', motion: 'on', palette: 'berry', fontTheme: 'cozy', currency: 'CAD', budget: 0, gcalHidden: [], gcalKnown: [], notifyTimer: true, notifyLead: 5, carryOver: true, outline: 'theme', fill: 'theme', sounds: {}, soundVol: 0.7, soundAuto: true },
+      settings: { focus: 25, short: 5, long: 15, every: 4, goal: 6, autoBreak: true, autoFocus: false, sound: true, wake: true, theme: 'auto', motion: 'on', palette: 'berry', fontTheme: 'cozy', currency: 'CAD', budget: 0, gcalHidden: [], gcalKnown: [], notifyTimer: true, notifyLead: 5, carryOver: true, askActual: true, outline: 'theme', fill: 'theme', sounds: {}, soundVol: 0.7, soundAuto: true },
       days: { [t]: [
         { id: uid(), text: 'Review lecture notes', mins: 50, start: '09:30', est: 2, pomos: 1, spent: 25, done: false, sample: true },
         { id: uid(), text: 'Finish lab exercises', mins: 75, start: '13:00', est: 3, pomos: 0, spent: 0, done: false, sample: true },
@@ -2270,6 +2316,30 @@ body.bulk-on .fab { display: none; }
     toast(`+${gained} seed${gained > 1 ? 's' : ''} · ${why}`);
     checkAch();
   }
+  // ---------- how long it actually took (optional) ----------
+  let abTask = null, abTimer = null;
+  function askActual(x) {
+    if (S.settings.askActual === false || !x) return;
+    abTask = x; clearTimeout(abTimer);
+    $('abQ').textContent = `How long did “${x.text.length > 34 ? x.text.slice(0, 32) + '…' : x.text}” take?`;
+    const opts = $('abOpts'); opts.innerHTML = ''; $('abOther').hidden = true;
+    const planned = x.mins || Number(S.settings.focus) || 25, focused = x.spent || 0;
+    const seen = new Set();
+    const add = (m, label, main) => { if (!m || seen.has(m)) return; seen.add(m); const b = document.createElement('button'); b.textContent = label || fmtDur(m); if (main) b.className = 'main'; b.onclick = () => setActual(x, m); opts.appendChild(b); };
+    if (focused) add(focused, `${fmtDur(focused)} (focused)`, true);
+    add(planned, `${fmtDur(planned)} (as planned)`, !focused);
+    [15, 30, 45, 60, 90].forEach(m => add(m));
+    const o = document.createElement('button'); o.textContent = 'Other…'; o.onclick = () => { $('abOther').hidden = false; $('abMins').value = ''; $('abMins').focus(); clearTimeout(abTimer); }; opts.appendChild(o);
+    $('actualBar').hidden = false;
+    abTimer = setTimeout(hideActual, 12000);
+  }
+  function hideActual() { clearTimeout(abTimer); $('actualBar').hidden = true; abTask = null; }
+  function setActual(x, m) { x.actual = Math.max(1, Math.min(900, Math.round(m))); save(); hideActual(); renderAll(); toast(`Saved: took ${fmtDur(x.actual)}`); }
+  function tookText(x) {
+    if (!x.actual) return '';
+    const d = x.actual - (x.mins || 0);
+    return `took ${fmtDur(x.actual)}${x.mins && Math.abs(d) >= 5 ? ` (${fmtDur(Math.abs(d))} ${d > 0 ? 'over' : 'under'})` : ''}`;
+  }
   function onTaskDone(x, day) {
     if (!x.rewarded && !x.sample) { x.rewarded = true; S.stats.tasksDone += 1; ds(todayKey()).tasks += 1; earn(2); toast('+2 seeds · Task finished'); }
     const list = S.days[day] || [];
@@ -2576,6 +2646,8 @@ body.bulk-on .fab { display: none; }
     $('tally').textContent = list.length
       ? `${gathered} of ${planned} planned sessions · ${doneCount}/${list.length} tasks done · ${mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins} min`} focused`
       : 'Each seed is one focus session. Add tasks to plan the day.';
+    const withAct = list.filter(x => x.done && x.actual);
+    if (withAct.length) { const pl = withAct.reduce((a, x) => a + (x.mins || 0), 0), ac = withAct.reduce((a, x) => a + x.actual, 0); $('tally').textContent += ` · finished tasks: planned ${fmtDur(pl)}, took ${fmtDur(ac)}`; }
 
     const ul = $('tasks'); ul.innerHTML = '';
     if (!list.length) {
@@ -2592,7 +2664,7 @@ body.bulk-on .fab { display: none; }
       const chk = document.createElement('button');
       chk.className = 'check'; chk.setAttribute('aria-label', x.done ? 'Mark not done' : 'Mark done');
       chk.innerHTML = '<svg viewBox="0 0 14 14"><path d="M2 7.5l3 3 7-7"/></svg>';
-      chk.onclick = () => { ensureAudio(); x.done = !x.done; if (x.done) onTaskDone(x, viewDay); save(); renderAll(); };
+      chk.onclick = () => { ensureAudio(); x.done = !x.done; if (x.done) onTaskDone(x, viewDay); save(); renderAll(); if (x.done) askActual(x); else hideActual(); };
       const main = document.createElement('button'); main.className = 'task-main';
       main.setAttribute('aria-label', `Edit ${x.text}`);
       main.onclick = () => openTaskSheet(x, viewDay);
@@ -2600,7 +2672,7 @@ body.bulk-on .fab { display: none; }
       const seeds = document.createElement('span'); seeds.className = 'task-seeds';
       const est = estOf(x), mins = x.mins || S.settings.focus;
       seeds.innerHTML = Array.from({ length: Math.min(Math.max(est, x.pomos), 12) }, (_, i) => seedSvg(i < x.pomos ? 'full' : 'empty')).join('') +
-        `<span>${x.start ? fmtClock(toMin(x.start)) + ' · ' : ''}${fmtDur(x.spent || 0)} of ${fmtDur(mins)}${x.carried && viewDay === todayKey() && x.carried < viewDay ? ' · from ' + dayLabel(x.carried).toLowerCase() : ''}</span>`;
+        `<span>${x.start ? fmtClock(toMin(x.start)) + ' · ' : ''}${x.done && x.actual ? `<b class="took ${x.actual > mins + 4 ? 'over' : x.actual < mins - 4 ? 'under' : ''}">${tookText(x)}</b>` : `${fmtDur(x.spent || 0)} of ${fmtDur(mins)}`}${x.carried && viewDay === todayKey() && x.carried < viewDay ? ' · from ' + dayLabel(x.carried).toLowerCase() : ''}</span>`;
       main.append(txt, seeds);
       const fb = document.createElement('button');
       fb.className = 'icon-btn focus-btn'; fb.setAttribute('aria-label', current ? 'Stop focusing on this task' : 'Focus on this task');
@@ -2669,6 +2741,7 @@ body.bulk-on .fab { display: none; }
   const renderEst = () => { $('estOut').textContent = fmtDur(addMins); $('estOut').setAttribute('aria-label', `${addMins} minutes`); };
   function renderSettings() {
     const s = S.settings;
+    $('setAskActual').checked = s.askActual !== false;
     $('setSubAuto').value = s.subAuto || 'auto';
     $('setMotion').value = s.motion || 'on';
     $('setCarry').checked = s.carryOver !== false;
@@ -3013,6 +3086,7 @@ body.bulk-on .fab { display: none; }
     $('tsName').value = task ? task.text : (pre.text || '');
     $('tsMins').value = task ? (task.mins || S.settings.focus) : (pre.mins || S.settings.focus);
     $('tsStart').value = task ? (task.start || '') : (pre.start || '');
+    $('tsActual').value = task && task.actual ? task.actual : '';
     $('tsDate').value = day === 'inbox' ? '' : day;
     $('tsAiSteps').disabled = false; $('tsAiSteps').textContent = '✦ Break it down';
     $('tsDelete').hidden = !task;
@@ -3308,7 +3382,7 @@ body.bulk-on .fab { display: none; }
         const x = b.x, current = t.taskId === x.id && t.taskDay === viewDay;
         el.className = `tl-block${x.done ? ' done' : ''}${current ? ' current' : ''}${hpx < 48 ? ' short' : ''}`;
         const mins = x.mins || S.settings.focus, spent = x.spent || 0;
-        el.innerHTML = `<span class="nm"></span><span class="tm">${fmtClock(b.s % 1440)} – ${fmtClock(b.e % 1440)} · ${fmtDur(mins)}${(x.subs || []).length ? ` · ${x.subs.filter(q => q.done).length}/${x.subs.length} steps` : ''}</span><span class="pg"><i style="width:${Math.min(100, spent / mins * 100)}%"></i></span>`;
+        el.innerHTML = `<span class="nm"></span><span class="tm">${fmtClock(b.s % 1440)} – ${fmtClock(b.e % 1440)} · ${x.done && x.actual ? tookText(x) : fmtDur(mins)}${(x.subs || []).length ? ` · ${x.subs.filter(q => q.done).length}/${x.subs.length} steps` : ''}</span><span class="pg"><i style="width:${Math.min(100, spent / mins * 100)}%"></i></span>`;
         el.querySelector('.nm').textContent = (x.rid ? '↻ ' : '') + x.text; const f0 = flagEl(x.prio); if (f0) el.querySelector('.nm').prepend(f0);
         const t0 = (x.tags || []).map(tagOf).find(Boolean); if (t0) el.style.borderLeft = `5px solid ${t0.color}`;
         el.setAttribute('aria-label', `${x.text}, ${fmtClock(b.s % 1440)} for ${fmtDur(mins)}`);
@@ -3569,11 +3643,11 @@ body.bulk-on .fab { display: none; }
       chk.innerHTML = '<svg viewBox="0 0 14 14"><path d="M2 7.5l3 3 7-7"/></svg>';
       if (x.done) chk.style.cssText = 'background:var(--leaf);border-color:var(--leaf)';
       chk.querySelector('svg').style.opacity = x.done ? '1' : '0';
-      chk.onclick = () => { x.done = !x.done; if (x.done) onTaskDone(x, 'inbox'); save(); refreshInbox(); };
+      chk.onclick = () => { x.done = !x.done; if (x.done) onTaskDone(x, 'inbox'); save(); refreshInbox(); if (x.done) askActual(x); else hideActual(); };
       const main = document.createElement('button'); main.className = 'task-main';
       const tx = document.createElement('span'); tx.className = 'task-text'; tx.textContent = x.text;
       const meta = document.createElement('span'); meta.className = 'task-seeds';
-      meta.textContent = fmtDur(x.mins || S.settings.focus) + ((x.subs || []).length ? ` · ${x.subs.filter(q => q.done).length}/${x.subs.length} steps` : '');
+      meta.textContent = (x.done && x.actual ? tookText(x) : fmtDur(x.mins || S.settings.focus)) + ((x.subs || []).length ? ` · ${x.subs.filter(q => q.done).length}/${x.subs.length} steps` : '');
       main.append(tx, meta); main.onclick = () => openTaskSheet(x, 'inbox');
       li.append(chk, main);
       decorateTask(li, chk, main, x);
@@ -3823,6 +3897,43 @@ Reply with JSON only: {"steps":["..."]}`;
     finally { btn.disabled = false; btn.textContent = '✦ Break it down'; }
   }
 
+  // ---------- home layout ----------
+  const HOME_CARDS = [
+    ['focus', 'Focus timer', 'Pip, your timer and daily goal'], ['next', 'Up next', 'Your top 3 tasks for today'], ['schedule', 'Schedule', 'What’s coming up today'],
+    ['money', 'Spent this week', 'Small card'], ['ious', 'IOUs', 'Small card'], ['due', 'Coming up', 'Subscriptions due this week'],
+    ['goals', 'Savings', 'Your goal jars'], ['quick', 'Quick add', 'Task, expense and IOU buttons'], ['inbox', 'Inbox', 'Small card'], ['subsmini', 'Subscriptions', 'Small card']
+  ];
+  const HOME_DEFAULT = HOME_CARDS.map(c => c[0]), HOME_DEFAULT_HIDDEN = ['inbox', 'subsmini'];
+  function homeOrder() { const o = (Array.isArray(S.settings.homeOrder) ? S.settings.homeOrder : []).filter(id => HOME_DEFAULT.includes(id)); HOME_DEFAULT.forEach(id => { if (!o.includes(id)) o.push(id); }); return o; }
+  const homeHidden = () => Array.isArray(S.settings.homeHidden) ? S.settings.homeHidden : HOME_DEFAULT_HIDDEN;
+  function layoutHome(empty) {
+    const host = $('homeCards'), hid = homeHidden();
+    homeOrder().forEach(id => { const el = host.querySelector(`[data-card="${id}"]`); if (!el) return; host.appendChild(el); el.hidden = hid.includes(id) || !!empty[id]; el.classList.remove('solo'); });
+    const vis = [...host.children].filter(el => !el.hidden);
+    for (let i = 0; i < vis.length; i++) { if (!vis[i].classList.contains('h-mini')) continue; if (vis[i + 1] && vis[i + 1].classList.contains('h-mini')) { i++; continue; } vis[i].classList.add('solo'); }
+  }
+  function renderArrange() {
+    const ul = $('arrangeList'); ul.innerHTML = ''; const order = homeOrder(), hid = homeHidden();
+    order.forEach((id, i) => {
+      const c = HOME_CARDS.find(x => x[0] === id); const li = document.createElement('li'); if (hid.includes(id)) li.className = 'off';
+      const an = document.createElement('span'); an.className = 'an'; an.innerHTML = '<span></span><small></small>'; an.firstChild.textContent = c[1]; an.lastChild.textContent = c[2];
+      const up = document.createElement('button'); up.className = 'mv'; up.textContent = '↑'; up.disabled = i === 0; up.setAttribute('aria-label', `Move ${c[1]} up`);
+      const dn = document.createElement('button'); dn.className = 'mv'; dn.textContent = '↓'; dn.disabled = i === order.length - 1; dn.setAttribute('aria-label', `Move ${c[1]} down`);
+      const mv = d => { const o = homeOrder(); const j = i + d; [o[i], o[j]] = [o[j], o[i]]; S.settings.homeOrder = o; save(); renderArrange(); renderHome(); };
+      up.onclick = () => mv(-1); dn.onclick = () => mv(1);
+      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !hid.includes(id); cb.setAttribute('aria-label', `Show ${c[1]}`);
+      cb.onchange = () => { const h = homeHidden().filter(x => x !== id); if (!cb.checked) h.push(id); S.settings.homeHidden = h; save(); renderArrange(); renderHome(); };
+      li.append(an, up, dn, cb); ul.appendChild(li);
+    });
+  }
+  function openArrange() { renderArrange(); try { $('homeSheet').showModal(); } catch (e) { $('homeSheet').setAttribute('open', ''); } }
+  $('homeEdit').onclick = openArrange;
+  $('arrangeHomeBtn').onclick = openArrange;
+  $('homeSheetClose').onclick = () => $('homeSheet').close();
+  $('homeReset').onclick = () => { S.settings.homeOrder = HOME_DEFAULT.slice(); S.settings.homeHidden = HOME_DEFAULT_HIDDEN.slice(); save(); renderArrange(); renderHome(); };
+  $('hInbox').onclick = () => { todoSeg = 'inbox'; showTab('todos'); };
+  $('hSubsMini').onclick = () => { showTab('money'); setMonSection('subs'); };
+
   // ---------- home ----------
   let homeScene = null;
   function renderHomeFocus() {
@@ -3850,7 +3961,7 @@ Reply with JSON only: {"steps":["..."]}`;
     tasks.forEach(x => {
       const li = document.createElement('li'); li.className = 'h-row';
       const c = document.createElement('button'); c.className = 'check'; c.setAttribute('aria-label', `Mark ${x.text} done`); c.innerHTML = '<svg viewBox="0 0 14 14"><path d="M2 7.5l3 3 7-7"/></svg>';
-      c.onclick = () => { ensureAudio(); x.done = true; onTaskDone(x, today); save(); renderAll(); };
+      c.onclick = () => { ensureAudio(); x.done = true; onTaskDone(x, today); save(); renderAll(); askActual(x); };
       const tx = document.createElement('button'); tx.className = 'tx'; const sp = document.createElement('span'); sp.textContent = x.text; const f = flagEl(x.prio); if (f) sp.prepend(f);
       const sm = document.createElement('small'); sm.textContent = [(x.tags || []).map(tagOf).filter(Boolean).map(t => t.name).join(', '), (x.subs || []).length ? `${x.subs.filter(q => q.done).length}/${x.subs.length} steps` : ''].filter(Boolean).join(' · ');
       tx.append(sp); if (sm.textContent) tx.append(sm); tx.onclick = () => openTaskSheet(x, today);
@@ -3894,6 +4005,9 @@ Reply with JSON only: {"steps":["..."]}`;
     });
     // savings
     $('hGoalsCard').hidden = !S.goals.length; const gh = $('hGoals'); gh.innerHTML = '';
+    const ibn = S.inbox.filter(x => !x.done).length; $('hmInbox').textContent = String(ibn);
+    $('hmSubs').textContent = money(Math.round(S.subs.reduce((a, sb) => a + monthlyOf(sb), 0)));
+    layoutHome({ due: !due.length, goals: !S.goals.length });
     S.goals.slice(0, 3).forEach(g => { const pct = g.target ? Math.min(100, Math.round(g.saved / g.target * 100)) : 0; const d = document.createElement('div'); d.className = 'h-goal'; d.style.setProperty('--gc', g.color || '#5f9e6e');
       d.innerHTML = '<div><span></span><span></span></div><div class="goal-bar2"><i></i></div>'; d.querySelector('span').textContent = g.name; d.querySelectorAll('span')[1].textContent = `${money(g.saved)} / ${money(g.target)}`; d.querySelector('i').style.width = pct + '%'; gh.appendChild(d); });
   }
@@ -4307,7 +4421,8 @@ Reply with JSON only: {"steps":["..."]}`;
   function sheetValues() {
     const name = $('tsName').value.trim();
     let mins = Math.round(Number($('tsMins').value)); if (!mins || mins < 5) mins = 5; if (mins > 600) mins = 600;
-    return { name, mins, start: $('tsStart').value || null, target: $('tsDate').value || 'inbox', prio: sheetPrio, tags: sheetTags.slice(), rep: readRepeat() };
+    const act = Math.round(Number($('tsActual').value));
+    return { name, mins, start: $('tsStart').value || null, target: $('tsDate').value || 'inbox', prio: sheetPrio, tags: sheetTags.slice(), rep: readRepeat(), actual: act > 0 ? Math.min(900, act) : null };
   }
   function applyFields(x, v) { Object.assign(x, { text: v.name, mins: v.mins, start: v.start, prio: v.prio, tags: v.tags.slice() }); x.est = estOf(x); }
   function sameRule(a, b) { return !!a && !!b && a.type === b.type && a.every === (b.every || 0) && JSON.stringify((a.days || []).slice().sort()) === JSON.stringify((b.days || []).slice().sort()); }
@@ -4317,7 +4432,7 @@ Reply with JSON only: {"steps":["..."]}`;
     const t = T();
     let x = sheetTask;
     const r = ruleOf(x);
-    if (x) { applyFields(x, v); moveTask(x, sheetDay, v.target); }
+    if (x) { applyFields(x, v); if (v.actual) x.actual = v.actual; else delete x.actual; moveTask(x, sheetDay, v.target); }
     else { x = { id: uid(), text: v.name, mins: v.mins, start: v.start, prio: v.prio, tags: v.tags, est: 1, pomos: 0, spent: 0, done: false, subs: sheetSubs }; x.est = estOf(x); listOf(v.target).push(x); }
     const day = v.target === 'inbox' ? null : v.target;
     if (r && scope === 'future') {
@@ -4376,6 +4491,10 @@ Reply with JSON only: {"steps":["..."]}`;
   $('todoSelect').onclick = () => { if (bulk.mode === 'tasks') bulkEnd(); else { bulkStart('tasks'); $('todoSelect').textContent = 'Done'; } };
   $('expSelect').onclick = () => { if (bulk.mode === 'exp') bulkEnd(); else { bulkStart('exp'); $('expSelect').textContent = 'Done'; } };
   $('bulkCancel').onclick = bulkEnd;
+  $('abClose').onclick = hideActual;
+  $('abOther').addEventListener('submit', e => { e.preventDefault(); const m = Number($('abMins').value); if (!m || !abTask) { $('abMins').focus(); return; } setActual(abTask, m); });
+  $('tsActualClear').onclick = () => { $('tsActual').value = ''; };
+  $('setAskActual').addEventListener('change', e => { S.settings.askActual = e.target.checked; save(); });
   $('bulkAll').onclick = () => { const v = bulkVisible(); const all = v.every(id => bulk.ids.has(id)); v.forEach(id => all ? bulk.ids.delete(id) : bulk.ids.add(id)); renderBulk(); if (bulk.mode === 'exp') renderMoney(); else { renderTasks(); renderTodoSeg(); } };
   $('bulkClose').onclick = () => $('bulkSheet').close();
   $('tagAddForm').addEventListener('submit', e => { e.preventDefault(); const t = newTag($('tagNew').value); if (!t) { $('tagNew').focus(); return; } $('tagNew').value = ''; save(); renderTagManager(); });
