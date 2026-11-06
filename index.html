@@ -925,6 +925,40 @@ body.fs-on .actual-bar { bottom: calc(20px + env(safe-area-inset-bottom, 0px)); 
 .arrange .mv { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 1rem; font-weight: 800; color: var(--ink); }
 .arrange .mv:disabled { opacity: .3; }
 .arrange input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--timer-ink); }
+/* Ask Pip chat */
+.pip-fab { position: fixed; z-index: 34; right: max(18px, env(safe-area-inset-right, 0px)); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); width: 54px; height: 54px; border-radius: 50%;
+  border: 0; background: var(--ink); color: var(--bg); font-size: 1.5rem; box-shadow: 0 8px 18px -8px rgba(0,0,0,.5); display: grid; place-items: center; }
+.pip-fab[hidden] { display: none; }
+body.on-timeline .fab { bottom: calc(148px + env(safe-area-inset-bottom, 0px)); }
+body.bulk-on .pip-fab, body.fs-on .pip-fab { display: none; }
+.pip-banner { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; border: 1.5px dashed var(--timer-ink); border-radius: 18px; background: color-mix(in srgb, var(--timer-ink) 8%, var(--surface)); padding: 12px 14px; text-align: left; color: var(--ink); }
+.pip-banner .pb-ic { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--timer-ink); color: var(--accent-ink); font-size: 1.1rem; }
+.pip-banner b { display: block; } .pip-banner small { color: var(--muted); font-weight: 600; }
+.chat-sheet { width: min(560px, 100vw); max-width: 100vw; height: min(88dvh, 760px); margin: auto auto 0; border-radius: 22px 22px 0 0; padding: 0; }
+@media (min-width: 700px) { .chat-sheet { margin: auto; border-radius: 22px; } }
+.chat-wrap { display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; height: 100%; }
+.chat-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 16px 16px 10px; border-bottom: 1px solid var(--line); }
+.chat-head h2 { margin: 0; font-family: var(--font-hand); font-weight: 400; font-size: 1.6rem; }
+.chat-ctx { font-size: .8rem; font-weight: 700; color: var(--muted); }
+.chat-head-btns { display: flex; align-items: center; gap: 10px; }
+.chat-log { overflow-y: auto; padding: 14px 14px 6px; display: flex; flex-direction: column; gap: 10px; }
+.msg { max-width: 86%; padding: 10px 13px; border-radius: 18px; line-height: 1.45; font-size: .95rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.me { align-self: flex-end; background: var(--timer-ink); color: var(--accent-ink); border-bottom-right-radius: 6px; }
+.msg.pip { align-self: flex-start; background: var(--surface-2); color: var(--ink); border-bottom-left-radius: 6px; }
+.msg.pip.thinking { color: var(--muted); font-style: italic; }
+.msg.err { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+.receipt { align-self: flex-start; max-width: 92%; display: grid; gap: 4px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); font-size: .86rem; }
+.receipt b { font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.receipt li { list-style: none; font-weight: 700; }
+.receipt ul { margin: 0; padding: 0; display: grid; gap: 3px; }
+.receipt .rbtns { display: flex; gap: 12px; margin-top: 2px; }
+.chat-sugs { display: flex; gap: 6px; overflow-x: auto; padding: 4px 14px 8px; }
+.chat-sugs:empty { display: none; }
+.chat-sugs button { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 12px; font-weight: 700; font-size: .84rem; color: var(--ink); }
+.chat-input { display: flex; gap: 8px; align-items: flex-end; padding: 10px 14px calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); }
+.chat-input textarea { flex: 1; min-width: 0; resize: none; border: 1px solid var(--line); border-radius: 18px; background: var(--surface-2); padding: 10px 14px; font: inherit; font-weight: 600; color: var(--ink); max-height: 140px; }
+.chat-send { width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--timer-ink); color: var(--accent-ink); font-size: 1.2rem; font-weight: 800; flex: none; }
+.chat-send:disabled { opacity: .5; }
 /* look settings */
 .look { display: grid; gap: 12px; }
 .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
@@ -1348,6 +1382,7 @@ body.fs-on .actual-bar { bottom: calc(20px + env(safe-area-inset-bottom, 0px)); 
       <button data-t="day" role="tab">Day</button>
       <button data-t="inbox" role="tab">Inbox<span class="badge" id="inboxCount"></span></button>
     </div>
+    <button class="pip-banner" id="todoAskPip"><span class="pb-ic">✦</span><span><b>Plan today with Pip</b><small>Chat about how you want your day laid out</small></span><span class="chev">›</span></button>
     <div class="list-tools" id="todoTools">
       <label class="sort-wrap" for="todoSort">Sort<select id="todoSort"><option value="prio">Priority</option><option value="time">Time</option><option value="name">Name</option></select></label>
       <button class="link-btn" id="todoSelect">Select</button>
@@ -1859,6 +1894,22 @@ body.fs-on .actual-bar { bottom: calc(20px + env(safe-area-inset-bottom, 0px)); 
   <div class="sheet-body">
     <div class="sheet-top"><h2 id="bulkTitle">Change</h2><button type="button" class="sheet-close" id="bulkClose" aria-label="Close">×</button></div>
     <div id="bulkOpts" style="display:grid;gap:8px"></div>
+  </div>
+</dialog>
+
+<button class="pip-fab" id="pipFab" aria-label="Ask Pip, your AI helper"><span>✦</span></button>
+<dialog class="sheet chat-sheet" id="chatSheet" aria-labelledby="chatTitle">
+  <div class="chat-wrap">
+    <div class="chat-head">
+      <div><h2 id="chatTitle">Ask Pip</h2><span class="chat-ctx" id="chatCtx"></span></div>
+      <div class="chat-head-btns"><button type="button" class="link-btn" id="chatClear">New chat</button><button type="button" class="sheet-close" id="chatClose" aria-label="Close">×</button></div>
+    </div>
+    <div class="chat-log" id="chatLog" aria-live="polite"></div>
+    <div class="chat-sugs" id="chatSugs"></div>
+    <form class="chat-input" id="chatForm" autocomplete="off">
+      <textarea id="chatText" rows="1" placeholder="Tell Pip what you want…" aria-label="Message to Pip"></textarea>
+      <button type="submit" class="chat-send" id="chatSend" aria-label="Send">↑</button>
+    </form>
   </div>
 </dialog>
 
@@ -4049,6 +4100,179 @@ Reply with JSON only: {"steps":["..."]}`;
   document.querySelectorAll('.set-row').forEach(b => b.onclick = () => openSetPanel(b.dataset.panel));
   document.querySelectorAll('[data-back]').forEach(b => b.onclick = () => openSetPanel(null));
 
+  // ---------- Ask Pip: chat that can change things ----------
+  let chatLog = [], chatBusy = false, chatUndo = null;
+  try { chatLog = JSON.parse(sessionStorage.getItem('burrow.chat') || '[]'); } catch (e) {}
+  const saveChat = () => { try { sessionStorage.setItem('burrow.chat', JSON.stringify(chatLog.slice(-40))); } catch (e) {} };
+  const CTX_NAME = { home: 'Home', focus: 'Focus', todos: 'To-do', timeline: 'Timeline', money: 'Spending', settings: 'Settings' };
+  function chatContextLabel() {
+    if (tab === 'todos') return todoSeg === 'inbox' ? 'Looking at your inbox' : `Looking at ${dayLabel(viewDay).toLowerCase()}'s to-do`;
+    if (tab === 'timeline') return `Looking at your ${tlView} view · ${tlView === 'day' ? dayLabel(viewDay).toLowerCase() : tlView === 'week' ? 'this week' : 'this month'}`;
+    if (tab === 'money') return `Looking at ${{ spend: 'your spending', subs: 'subscriptions', goals: 'savings goals', ious: 'IOUs' }[monSection] || 'Spending'}`;
+    return `Looking at ${CTX_NAME[tab] || 'Burrow'}`;
+  }
+  function chatSuggestions() {
+    if (tab === 'todos' || tab === 'timeline') return ['Plan my day', 'What should I do first?', 'Push everything after 5pm to tomorrow', 'Add 1h of data mining reading at 7pm', 'Make my gym task repeat Mon, Wed, Fri'];
+    if (tab === 'money') return ['How much did I spend on food this month?', 'Add $12.50 lunch at Danbo', 'What’s my biggest category this week?', 'Add Spotify $11.99 monthly', 'Put $50 in my savings goal'];
+    return ['What’s on today?', 'Plan my day', 'Add a task to email my prof tomorrow at 10am', 'How am I doing on my budget?', 'Switch to the Midnight Study theme'];
+  }
+  function bubble(cls, text) { const d = document.createElement('div'); d.className = 'msg ' + cls; d.textContent = text; $('chatLog').appendChild(d); return d; }
+  function renderChat() {
+    $('chatCtx').textContent = chatContextLabel();
+    const log = $('chatLog'); log.innerHTML = '';
+    if (!chatLog.length) bubble('pip', `Hi! I can plan your day, move or add tasks, log expenses, check your budget, add subscriptions, IOUs and goals, or change your theme. Just tell me what you want.${configured ? '' : '\n\n(The AI needs the Firebase setup first.)'}`);
+    chatLog.forEach((m, i) => {
+      if (m.role === 'user') bubble('me', m.text);
+      else {
+        bubble('pip' + (m.err ? ' err' : ''), m.text);
+        if (m.done && m.done.length) {
+          const r = document.createElement('div'); r.className = 'receipt';
+          r.innerHTML = '<b>Done</b><ul></ul>'; m.done.forEach(t => { const li = document.createElement('li'); li.textContent = '✓ ' + t; r.querySelector('ul').appendChild(li); });
+          if (i === chatLog.length - 1 && chatUndo) { const bt = document.createElement('div'); bt.className = 'rbtns'; const u = document.createElement('button'); u.className = 'link-btn'; u.textContent = 'Undo'; u.onclick = () => { S = ensureShape(chatUndo); S.updatedAt = Date.now(); chatUndo = null; save(); renderAll(); chatLog.push({ role: 'pip', text: 'Okay, I undid that.' }); saveChat(); renderChat(); }; bt.appendChild(u); r.appendChild(bt); }
+          $('chatLog').appendChild(r);
+        }
+      }
+    });
+    if (chatBusy) bubble('pip thinking', 'Pip is thinking…');
+    const sg = $('chatSugs'); sg.innerHTML = '';
+    if (!chatBusy) chatSuggestions().forEach(t => { const b = document.createElement('button'); b.type = 'button'; b.textContent = t; b.onclick = () => sendChat(t); sg.appendChild(b); });
+    requestAnimationFrame(() => { log.scrollTop = log.scrollHeight; });
+  }
+  function openChat(prefill) {
+    renderChat();
+    try { $('chatSheet').showModal(); } catch (e) { $('chatSheet').setAttribute('open', ''); }
+    if (prefill) sendChat(prefill); else setTimeout(() => { try { $('chatText').focus(); } catch (e) {} }, 80);
+  }
+  // what Pip can see
+  function chatContext() {
+    const today = todayKey(), now = new Date();
+    const tb = (x, day) => ({ id: x.id, title: x.text, day, start: x.start || null, minutes: x.mins || Number(S.settings.focus), priority: x.prio || 0, tags: (x.tags || []).map(tagOf).filter(Boolean).map(t => t.name), done: !!x.done, repeats: !!x.rid, steps: (x.subs || []).length });
+    const days = {}; const k0 = tab === 'timeline' || tab === 'todos' ? (viewDay < today ? viewDay : today) : today;
+    for (let i = 0; i < 8; i++) { const k = shiftKey(k0, i); ensureRecurring(k); const l = S.days[k] || []; if (l.length || i < 2) days[k] = { weekday: dayName(k), tasks: l.map(x => tb(x, k)), calendar: visibleEvents(k).map(ev => ev.allDay ? { title: ev.title, allDay: true } : { title: ev.title, start: toHHMM(ev.s % 1440), end: toHHMM(Math.min(ev.e, 1439)) }) }; }
+    if (viewDay !== today && !days[viewDay]) days[viewDay] = { weekday: dayName(viewDay), tasks: (S.days[viewDay] || []).map(x => tb(x, viewDay)) };
+    const month = today.slice(0, 7), byCat = {};
+    S.expenses.filter(e => (e.date || '').startsWith(month)).forEach(e => { const n = catOf(e.cat)[1]; byCat[n] = (byCat[n] || 0) + e.amount / 100; });
+    return {
+      now: { date: today, weekday: dayName(today), time: `${pad(now.getHours())}:${pad(now.getMinutes())}` },
+      screen: chatContextLabel(), viewing_day: viewDay,
+      days, inbox: S.inbox.filter(x => !x.done).slice(0, 30).map(x => tb(x, 'inbox')),
+      tags: tagList().map(t => t.name), categories: cats().map(c => c[1]), currency: S.settings.currency || 'CAD',
+      focus_minutes: Number(S.settings.focus), daily_goal_sessions: Number(S.settings.goal), sessions_today: S.stats.byDay[today] || 0,
+      monthly_budget: Number(S.settings.budget) || null, spent_this_month_by_category: byCat,
+      recent_expenses: S.expenses.slice().sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 25).map(e => ({ id: e.id, amount: e.amount / 100, place: e.merchant || '', date: e.date, category: catOf(e.cat)[1] })),
+      subscriptions: S.subs.map(sb => ({ id: sb.id, name: sb.name, amount: sb.amount / 100, cycle: sb.cycle, next: sb.next })),
+      goals: S.goals.map(g => ({ id: g.id, name: g.name, saved: g.saved / 100, target: g.target / 100, by: g.date || null })),
+      ious_open: S.ious.filter(o => !o.settled).map(o => ({ person: o.person, amount: o.amount / 100, direction: o.dir === 'in' ? 'they_owe_me' : 'i_owe_them', what: o.what || '' })),
+      themes: PRESETS.map(p => p.name)
+    };
+  }
+  const CHAT_RULES = `You are Pip, the friendly helper inside Burrow, a cozy planner app for a university student. You can talk AND change things in the app.
+Reply with JSON only, exactly: {"reply": "short friendly message", "actions": [ ... ]}
+Keep "reply" short (1-4 sentences, plain text, no markdown). Say what you did or answer the question using the data. If something is unclear and risky (like deleting), ask instead of acting.
+Actions you can use (only these, only with ids from the data, times are 24-hour "HH:MM", days are "YYYY-MM-DD", money is a plain number in the user's currency):
+- {"type":"add_task","title":"...","day":"YYYY-MM-DD or inbox","start":"HH:MM or null","minutes":25,"priority":0-3,"tags":["name"],"steps":["..."],"repeat":{"type":"daily|weekdays|weekly|biweekly|monthly|interval","days":[0-6 with 0=Sunday],"every":3} or null}
+- {"type":"update_task","id":"...","title":"...","day":"YYYY-MM-DD or inbox","start":"HH:MM or null","minutes":30,"priority":0-3,"tags":["name"],"done":true}  (include only fields that change; "start": null clears the time)
+- {"type":"delete_task","id":"..."}
+- {"type":"add_steps","id":"...","steps":["..."]}
+- {"type":"add_expense","amount":12.5,"place":"...","date":"YYYY-MM-DD","category":"category name","note":"..."}
+- {"type":"update_expense","id":"...","amount":12.5,"place":"...","date":"YYYY-MM-DD","category":"..."}
+- {"type":"delete_expense","id":"..."}
+- {"type":"add_subscription","name":"...","amount":11.99,"cycle":"weekly|monthly|yearly","next":"YYYY-MM-DD","category":"..."}
+- {"type":"add_goal","name":"...","target":1500,"by":"YYYY-MM-DD or null"}
+- {"type":"add_to_goal","goal":"goal id or name","amount":50}
+- {"type":"add_iou","person":"...","amount":20,"direction":"they_owe_me|i_owe_them","what":"..."}
+- {"type":"settle_up","person":"..."}
+- {"type":"set_timer","mode":"focus|short|long","minutes":25}
+- {"type":"start_focus","task_id":"... or null"}
+- {"type":"set_theme","name":"preset theme name"}
+- {"type":"open","tab":"home|todos|timeline|money|settings"}
+Planning rules: when laying out a day, give tasks start times that do not overlap each other or calendar events, start no earlier than the current time for today, leave 5-15 minute gaps, put high priority and hard work earlier unless the user says otherwise, and respect anything the user asks for (like "nothing after 9pm" or "gym at 6"). Use the user's existing task ids; do not re-add tasks that exist. Repeating tasks can be moved for that day only.
+If the user only asks a question, use "actions": [].`;
+  async function sendChat(text) {
+    text = String(text || '').trim(); if (!text || chatBusy) return;
+    if (!configured) { chatLog.push({ role: 'user', text }, { role: 'pip', text: 'The AI needs the Firebase setup first (see the README).', err: true }); saveChat(); renderChat(); return; }
+    chatLog.push({ role: 'user', text }); chatBusy = true; saveChat(); renderChat(); $('chatText').value = ''; autoGrow();
+    const history = chatLog.slice(-13, -1).map(m => `${m.role === 'user' ? 'User' : 'Pip'}: ${m.text}${m.done && m.done.length ? ' [did: ' + m.done.join('; ') + ']' : ''}`).join('\n');
+    const prompt = `${CHAT_RULES}\n\nApp data right now:\n${JSON.stringify(chatContext())}\n\nConversation so far:\n${history || '(none)'}\n\nUser: ${text}`;
+    try {
+      const r = await askAI(prompt);
+      const snap = clone(S);
+      const done = runChatActions(Array.isArray(r.actions) ? r.actions : []);
+      if (done.length) { chatUndo = snap; save(); renderAll(); } else chatUndo = null;
+      chatLog.push({ role: 'pip', text: typeof r.reply === 'string' && r.reply.trim() ? r.reply.trim() : (done.length ? 'Done!' : 'Hmm, I’m not sure. Could you say that another way?'), done });
+    } catch (e) {
+      chatLog.push({ role: 'pip', text: aiErrText(e), err: true });
+    } finally { chatBusy = false; saveChat(); renderChat(); }
+  }
+  // carry out what Pip decided
+  function findTaskAny(id) { for (const k in S.days) { const x = S.days[k].find(t => t.id === id); if (x) return { x, day: k }; } const x = S.inbox.find(t => t.id === id); return x ? { x, day: 'inbox' } : null; }
+  const catIdByName = n => { if (!n) return null; const c = cats().find(c => c[1].toLowerCase() === String(n).toLowerCase() || c[0] === n); return c ? c[0] : null; };
+  const tagIdsByName = arr => (Array.isArray(arr) ? arr : []).map(n => { const t = tagList().find(t => t.name.toLowerCase() === String(n).toLowerCase()) || newTag(String(n)); return t && t.id; }).filter(Boolean);
+  const okDay = d => d === 'inbox' || (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d));
+  const toCents = v => { const n = Math.round(Number(v) * 100); return Number.isFinite(n) && n > 0 ? n : 0; };
+  function runChatActions(actions) {
+    const done = [];
+    actions.slice(0, 60).forEach(a => {
+      try {
+        if (!a || typeof a !== 'object') return;
+        switch (a.type) {
+          case 'add_task': {
+            const title = String(a.title || '').trim().slice(0, 120); if (!title) return;
+            let day = okDay(a.day) ? a.day : 'inbox'; const start = validTime(a.start) ? a.start : null;
+            const x = { id: uid(), text: title, mins: clampMins(a.minutes, Number(S.settings.focus) || 25), start, prio: Math.max(0, Math.min(3, Number(a.priority) || 0)), tags: tagIdsByName(a.tags), est: 1, pomos: 0, spent: 0, done: false, subs: (Array.isArray(a.steps) ? a.steps : []).filter(q => typeof q === 'string' && q.trim()).slice(0, 10).map(q => ({ id: uid(), text: q.trim().slice(0, 120), done: false })) };
+            x.est = estOf(x);
+            const rp = a.repeat && typeof a.repeat === 'object' && ['daily', 'weekdays', 'weekly', 'biweekly', 'monthly', 'interval'].includes(a.repeat.type) ? a.repeat : null;
+            if (rp) {
+              if (day === 'inbox') day = todayKey();
+              const rid = 'r_' + uid(); const rule = { type: rp.type, days: Array.isArray(rp.days) ? rp.days.map(Number).filter(d => d >= 0 && d <= 6) : [], every: rp.type === 'interval' ? Math.max(2, Math.min(90, Number(rp.every) || 3)) : 0 };
+              S.recur.push({ id: rid, text: title, mins: x.mins, start, prio: x.prio, tags: x.tags.slice(), steps: x.subs.map(q => q.text), rule, from: day, until: null });
+              ensureRecurring(day, 14);
+              done.push(`Added “${title}” · ${repeatLabel(S.recur[S.recur.length - 1]).toLowerCase()}`);
+            } else { listOf(day).push(x); done.push(`Added “${title}” to ${day === 'inbox' ? 'your inbox' : dayLabel(day).toLowerCase()}${start ? ' at ' + fmtClock(toMin(start)) : ''}`); }
+            break; }
+          case 'update_task': {
+            const f = findTaskAny(a.id); if (!f) return; const x = f.x; const bits = [];
+            if (typeof a.title === 'string' && a.title.trim()) { x.text = a.title.trim().slice(0, 120); bits.push('renamed'); }
+            if ('start' in a) { if (a.start === null) { x.start = null; bits.push('no set time'); } else if (validTime(a.start)) { x.start = a.start; bits.push(fmtClock(toMin(a.start))); } }
+            if (a.minutes != null) { x.mins = clampMins(a.minutes, x.mins); x.est = estOf(x); bits.push(fmtDur(x.mins)); }
+            if (a.priority != null) { x.prio = Math.max(0, Math.min(3, Number(a.priority) || 0)); bits.push(PRIO_NAME[x.prio].toLowerCase() + ' priority'); }
+            if (Array.isArray(a.tags)) { x.tags = tagIdsByName(a.tags); bits.push('tags updated'); }
+            if (a.done === true && !x.done) { x.done = true; onTaskDone(x, f.day); bits.push('done'); } else if (a.done === false && x.done) { x.done = false; bits.push('not done'); }
+            if (okDay(a.day) && a.day !== f.day) { if (x.rid) x.custom = true; moveTask(x, f.day, a.day); bits.push(a.day === 'inbox' ? 'moved to inbox' : 'moved to ' + dayLabel(a.day).toLowerCase()); }
+            if (x.rid && bits.length) x.custom = true;
+            if (bits.length) done.push(`“${x.text}”: ${bits.join(', ')}`);
+            break; }
+          case 'delete_task': { const f = findTaskAny(a.id); if (!f) return; const l = listOf(f.day), i = l.indexOf(f.x); if (i >= 0) l.splice(i, 1); forget(f.x.id); const t = T(); if (t.taskId === f.x.id) { t.taskId = null; t.taskDay = null; } done.push(`Deleted “${f.x.text}”`); break; }
+          case 'add_steps': { const f = findTaskAny(a.id); if (!f) return; const st = (Array.isArray(a.steps) ? a.steps : []).filter(q => typeof q === 'string' && q.trim()).slice(0, 10); f.x.subs = f.x.subs || []; st.forEach(q => f.x.subs.push({ id: uid(), text: q.trim().slice(0, 120), done: false })); if (st.length) done.push(`Added ${st.length} steps to “${f.x.text}”`); break; }
+          case 'add_expense': { const amount = toCents(a.amount); if (!amount) return; const place = String(a.place || '').trim().slice(0, 80); const cat = catIdByName(a.category) || guessCat(place) || 'other';
+            S.expenses.push({ id: uid(), amount, merchant: place, date: okDay(a.date) && a.date !== 'inbox' ? a.date : todayKey(), cat, note: String(a.note || '').slice(0, 120), items: [], src: 'pip' }); done.push(`Logged ${money(amount)}${place ? ' at ' + place : ''} (${catOf(cat)[1]})`); break; }
+          case 'update_expense': { const e = S.expenses.find(x => x.id === a.id); if (!e) return; if (a.amount != null && toCents(a.amount)) e.amount = toCents(a.amount); if (typeof a.place === 'string') e.merchant = a.place.slice(0, 80); if (okDay(a.date) && a.date !== 'inbox') e.date = a.date; const c = catIdByName(a.category); if (c) e.cat = c; done.push(`Updated ${e.merchant || 'expense'} · ${money(e.amount)}`); break; }
+          case 'delete_expense': { const e = S.expenses.find(x => x.id === a.id); if (!e) return; forget(e.id); S.expenses = S.expenses.filter(x => x !== e); done.push(`Deleted ${e.merchant || 'expense'} (${money(e.amount)})`); break; }
+          case 'add_subscription': { const amount = toCents(a.amount), name = String(a.name || '').trim().slice(0, 40); if (!amount || !name) return; const next = okDay(a.next) && a.next !== 'inbox' ? a.next : todayKey();
+            S.subs.push({ id: 's_' + uid(), name, amount, cycle: ['weekly', 'monthly', 'yearly'].includes(a.cycle) ? a.cycle : 'monthly', next, day: Number(next.slice(8)), cat: catIdByName(a.category) || 'bills', remind: 1, auto: 'default' }); done.push(`Added subscription ${name} · ${money(amount)}`); processSubs(); break; }
+          case 'add_goal': { const target = toCents(a.target), name = String(a.name || '').trim().slice(0, 40); if (!target || !name) return; S.goals.push({ id: 'g_' + uid(), name, target, saved: 0, date: okDay(a.by) && a.by !== 'inbox' ? a.by : null, color: GOAL_COLS[S.goals.length % GOAL_COLS.length], log: [] }); done.push(`New goal: ${name} (${money(target)})`); break; }
+          case 'add_to_goal': { const g = S.goals.find(x => x.id === a.goal) || S.goals.find(x => x.name.toLowerCase() === String(a.goal || '').toLowerCase()) || (S.goals.length === 1 ? S.goals[0] : null); const amt = toCents(a.amount); if (!g || !amt) return; g.saved += amt; (g.log = g.log || []).push({ id: uid(), amt, at: todayKey(), note: 'Added with Pip' }); done.push(`Added ${money(amt)} to ${g.name}`); break; }
+          case 'add_iou': { const amount = toCents(a.amount), person = String(a.person || '').trim().slice(0, 40); if (!amount || !person) return; const dir = a.direction === 'i_owe_them' ? 'out' : 'in'; S.ious.push({ id: 'o_' + uid(), person, amount, dir, what: String(a.what || '').slice(0, 60), date: todayKey(), settled: false }); done.push(dir === 'in' ? `${person} owes you ${money(amount)}` : `You owe ${person} ${money(amount)}`); break; }
+          case 'settle_up': { const p = String(a.person || '').trim().toLowerCase(); const open = S.ious.filter(o => !o.settled && o.person.trim().toLowerCase() === p); if (!open.length) return; open.forEach(o => { o.settled = true; o.settledAt = todayKey(); }); done.push(`Settled up with ${open[0].person}`); break; }
+          case 'set_timer': { const m = ['focus', 'short', 'long'].includes(a.mode) ? a.mode : T().mode; const mins = Math.max(1, Math.min(180, Math.round(Number(a.minutes) || 0))); if (mins) S.settings[m] = mins; if (!T().running) setMode(m); done.push(`Timer: ${{ focus: 'focus', short: 'short break', long: 'long break' }[m]}${mins ? ' · ' + mins + ' min' : ''}`); break; }
+          case 'start_focus': { const t = T(); const f = a.task_id ? findTaskAny(a.task_id) : null; if (f) { t.taskId = f.x.id; t.taskDay = f.day; } if (t.mode !== 'focus') setMode('focus'); setTimeout(() => { $('chatSheet').close(); showTab('focus'); start(); }, 700); done.push(`Starting focus${f ? ' on “' + f.x.text + '”' : ''}`); break; }
+          case 'set_theme': { const p = PRESETS.find(x => x.name.toLowerCase() === String(a.name || '').toLowerCase()) || PRESETS.find(x => x.name.toLowerCase().includes(String(a.name || '').toLowerCase().split(' ')[0])); if (!p) return; PRESET_KEYS.forEach(k => { S.settings[k] = p[k]; }); renderHeader(); done.push(`Theme: ${p.name}`); break; }
+          case 'open': { if (['home', 'todos', 'timeline', 'money', 'settings'].includes(a.tab)) { const tb = a.tab; setTimeout(() => { $('chatSheet').close(); showTab(tb); }, 600); done.push(`Opening ${CTX_NAME[tb]}`); } break; }
+        }
+      } catch (e) {}
+    });
+    return done;
+  }
+  function autoGrow() { const t = $('chatText'); t.style.height = 'auto'; t.style.height = Math.min(140, t.scrollHeight) + 'px'; }
+  $('chatText').addEventListener('input', autoGrow);
+  $('chatText').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat($('chatText').value); } });
+  $('chatForm').addEventListener('submit', e => { e.preventDefault(); sendChat($('chatText').value); });
+  $('chatClose').onclick = () => $('chatSheet').close();
+  $('chatClear').onclick = () => { chatLog = []; chatUndo = null; saveChat(); renderChat(); };
+  $('pipFab').onclick = () => openChat();
+  $('todoAskPip').onclick = () => { if (todoSeg !== 'day') { todoSeg = 'day'; renderTodoSeg(); } openChat(); };
+  function syncPipFab() { $('pipFab').hidden = !['home', 'todos', 'timeline', 'money'].includes(tab); document.body.classList.toggle('on-timeline', tab === 'timeline'); }
+
   // ---------- pages ----------
   let openPageName = null;
   const TABS = ['home', 'focus', 'todos', 'timeline', 'money', 'settings'];
@@ -4077,6 +4301,7 @@ Reply with JSON only: {"steps":["..."]}`;
     const lit = name === 'focus' ? 'home' : name;
     document.querySelectorAll('#tabbar button').forEach(b => { if (b.dataset.tab === lit) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
     try { localStorage.setItem('burrow.tab', name); } catch (e) {}
+    syncPipFab();
     renderTab();
     if (name !== 'focus') $('page-' + name).scrollTop = 0;
     if (name === 'timeline') requestAnimationFrame(scrollTimeline);
@@ -4386,7 +4611,7 @@ Reply with JSON only: {"steps":["..."]}`;
     const x = { id: uid(), text: v, mins: Number(S.settings.focus) || 25, start: null, est: 1, pomos: 0, spent: 0, done: false, subs: [] };
     S.inbox.push(x); $('inboxNew').value = ''; save(); refreshInbox();
   });
-  $('aiPlanBtn').onclick = aiPlanDay;
+  $('aiPlanBtn').onclick = () => openChat('Plan my day. Fit my tasks around my calendar and give each one a start time.');
   $('aiSortBtn').onclick = aiSortInbox;
   $('aiDumpBtn').onclick = aiBrainDump;
   $('tsAiSteps').onclick = aiSteps;
