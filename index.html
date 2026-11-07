@@ -536,6 +536,7 @@ body { overflow: hidden; background: var(--paper); color: var(--paper-ink); }
 .money-sum { display: grid; gap: 10px; }
 .money-total { font-family: var(--font-display); font-weight: 800; font-size: 2.6rem; line-height: 1; font-variant-numeric: tabular-nums; }
 .money-add { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.money-add .imp-btn { grid-column: 1 / -1; }
 .money-add > * { min-height: 50px; border-radius: 14px; font-weight: 800; }
 .budget { display: grid; gap: 4px; font-weight: 700; font-size: .88rem; color: var(--muted); }
 .budget .bar2 { height: 10px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
@@ -959,6 +960,19 @@ body.bulk-on .pip-fab, body.fs-on .pip-fab { display: none; }
 .chat-input textarea { flex: 1; min-width: 0; resize: none; border: 1px solid var(--line); border-radius: 18px; background: var(--surface-2); padding: 10px 14px; font: inherit; font-weight: 600; color: var(--ink); max-height: 140px; }
 .chat-send { width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--timer-ink); color: var(--accent-ink); font-size: 1.2rem; font-weight: 800; flex: none; }
 .chat-send:disabled { opacity: .5; }
+.pay-status { display: grid; gap: 2px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); font-size: .88rem; }
+.pay-status b { font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.pay-result { margin: 0; font-weight: 700; font-size: .9rem; }
+.pay-result:empty { display: none; }
+.pay-result.ok { color: var(--leaf); } .pay-result.bad { color: var(--accent); }
+.pay-check ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 5px; font-size: .86rem; line-height: 1.45; }
+.past-opt { display: grid; gap: 3px; padding: 14px; border-radius: 16px; border: 1.5px solid var(--line); background: var(--surface-2); cursor: pointer; text-transform: none; letter-spacing: 0; color: var(--ink); }
+.past-opt b { font-weight: 800; } .past-opt span { font-size: .86rem; font-weight: 600; color: var(--muted); }
+.past-opt:active { border-color: var(--timer-ink); }
+.past-tools { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.past-list label .dup { display: block; font-size: .76rem; font-weight: 700; color: var(--accent); }
+.past-list label .sub2 { display: block; }
+.past-list { max-height: 46vh; }
 /* look settings */
 .look { display: grid; gap: 12px; }
 .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
@@ -1543,6 +1557,7 @@ body.bulk-on .pip-fab, body.fs-on .pip-fab { display: none; }
     <section class="card pad money-add">
       <label class="btn-accent file-btn" for="rcptInput">Scan a receipt</label>
       <button class="btn-ghost" id="addExpense">Add manually</button>
+      <button class="btn-ghost imp-btn" id="importPast">Import past purchases</button>
       <input type="file" id="rcptInput" accept="image/*" class="vh" tabindex="-1">
     </section>
     <section class="card pad exp-sec">
@@ -1888,6 +1903,23 @@ body.bulk-on .pip-fab, body.fs-on .pip-fab { display: none; }
     <p class="muted" style="margin:0">Use the arrows to move cards up or down. Untick a card to hide it. Small cards sit side by side when they're next to each other.</p>
     <ul class="arrange" id="arrangeList"></ul>
     <button type="button" class="link-btn" id="homeReset" style="justify-self:start">Reset to default</button>
+  </div>
+</dialog>
+<dialog class="sheet" id="pastSheet" aria-labelledby="pastTitle">
+  <div class="sheet-body">
+    <div class="sheet-top"><h2 id="pastTitle">Import past purchases</h2><button type="button" class="sheet-close" id="pastClose" aria-label="Close">×</button></div>
+    <div id="pastStart" style="display:grid;gap:10px">
+      <p class="muted" style="margin:0">Add purchases you already made. Burrow reads them, skips ones you've already logged, and lets you pick which to add.</p>
+      <label class="past-opt" for="pastImgs"><b>From screenshots</b><span>Screenshot your Apple Wallet card history or your banking app's transaction list. You can pick several.</span></label>
+      <input type="file" id="pastImgs" accept="image/*" multiple class="vh" tabindex="-1">
+      <label class="past-opt" for="pastCsv"><b>From a bank statement file</b><span>Download a CSV file from your online banking (look for “Download transactions” or “Export”), then pick it here.</span></label>
+      <input type="file" id="pastCsv" accept=".csv,text/csv,text/plain" class="vh" tabindex="-1">
+    </div>
+    <div class="ai-status" id="pastStatus"></div>
+    <div class="toggles" id="pastSignWrap" hidden><label for="pastSign">Purchases are the positive numbers in this file <input type="checkbox" id="pastSign"></label></div>
+    <div class="past-tools" id="pastTools" hidden><button class="link-btn" id="pastAll">Select all</button><span class="muted" id="pastCount"></span></div>
+    <ul class="imp-list past-list" id="pastList"></ul>
+    <div class="row2" id="pastActions" hidden><button type="button" class="btn-accent" id="pastAdd">Add</button><button type="button" class="btn-ghost" id="pastAgain">Start over</button></div>
   </div>
 </dialog>
 <dialog class="sheet" id="bulkSheet" aria-labelledby="bulkTitle">
@@ -3786,7 +3818,7 @@ body.bulk-on .pip-fab, body.fs-on .pip-fab { display: none; }
   // ---------- AI helper (Firebase AI Logic, Gemini) ----------
   const AI_MODELS = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
   let aiMod = null, aiInst = null, aiModelIdx = 0, aiNext = null, aiBusy = false;
-  async function askAI(prompt) {
+  async function askAI(prompt, images) {
     if (!configured) throw new Error('setup');
     if (!fb || !fb.app) throw new Error('loading');
     if (!aiMod) aiMod = await import(FB + 'firebase-ai.js');
@@ -3795,7 +3827,7 @@ body.bulk-on .pip-fab, body.fs-on .pip-fab { display: none; }
     for (let i = aiModelIdx; i < AI_MODELS.length; i++) {
       try {
         const model = aiMod.getGenerativeModel(aiInst, { model: AI_MODELS[i], generationConfig: { responseMimeType: 'application/json', temperature: 0.4 } });
-        const res = await model.generateContent(prompt);
+        const res = await model.generateContent(images && images.length ? [prompt, ...images.map(d => ({ inlineData: { mimeType: 'image/jpeg', data: d } }))] : prompt);
         aiModelIdx = i;
         const txt = res.response.text().trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
         return JSON.parse(txt);
@@ -5521,6 +5553,157 @@ If the user only asks a question, use "actions": [].`;
   $('splitClose').onclick = () => $('splitSheet').close();
   document.querySelectorAll('#monSection button').forEach(b => b.onclick = () => setMonSection(b.dataset.m));
 
+  // ---------- import past purchases (screenshots or bank CSV) ----------
+  let pastItems = [], pastRaw = null;
+  function openPast() {
+    pastItems = []; pastRaw = null; $('pastStart').hidden = false; $('pastStatus').textContent = ''; $('pastList').innerHTML = '';
+    $('pastActions').hidden = true; $('pastTools').hidden = true; $('pastSignWrap').hidden = true;
+    try { $('pastSheet').showModal(); } catch (e) { $('pastSheet').setAttribute('open', ''); }
+  }
+  const nearDup = (date, amount) => S.expenses.some(e => e.amount === amount && Math.abs(dayNum(e.date || todayKey()) - dayNum(date)) <= 1);
+  function setPastItems(list, note) {
+    const seen = new Set();
+    pastItems = list.filter(t => t && t.amount > 0 && /^\d{4}-\d{2}-\d{2}$/.test(t.date)).filter(t => { const k = `${t.date}|${t.amount}|${(t.merchant || '').toLowerCase()}`; if (seen.has(k)) return false; seen.add(k); return true; })
+      .map(t => { const dup = nearDup(t.date, t.amount); const prev = S.expenses.slice().reverse().find(e => (e.merchant || '').trim().toLowerCase() === (t.merchant || '').trim().toLowerCase()); const cat = (prev && prev.cat) || guessCat(t.merchant || '') || 'other'; return { ...t, merchant: (t.merchant || '').trim().slice(0, 80), cat: cats().some(c => c[0] === cat) ? cat : 'other', dup, on: !dup && !t.refund }; })
+      .sort((a, b) => b.date.localeCompare(a.date));
+    $('pastStart').hidden = true;
+    $('pastStatus').textContent = pastItems.length ? (note || `Found ${pastItems.length} purchase${pastItems.length === 1 ? '' : 's'}. Untick anything you don’t want.`) : 'Couldn’t find any purchases. Try a clearer screenshot, or a different file.';
+    renderPast();
+  }
+  function renderPast() {
+    const ul = $('pastList'); ul.innerHTML = '';
+    pastItems.forEach((t, i) => {
+      const li = document.createElement('li'), lab = document.createElement('label');
+      const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = t.on; cb.id = 'past' + i; cb.onchange = () => { t.on = cb.checked; countPast(); };
+      const nm = document.createElement('span'); nm.textContent = t.merchant || 'Purchase';
+      const sub = document.createElement('span'); sub.className = 'sub2'; sub.textContent = `${shortDate(t.date)} · ${catOf(t.cat)[1]}${t.refund ? ' · refund' : ''}`; nm.appendChild(sub);
+      if (t.dup) { const d = document.createElement('span'); d.className = 'dup'; d.textContent = 'Looks like you already logged this'; nm.appendChild(d); }
+      const am = document.createElement('span'); am.className = 'tm'; am.textContent = money(t.amount);
+      lab.append(cb, nm, am); li.appendChild(lab); ul.appendChild(li);
+    });
+    $('pastTools').hidden = !pastItems.length; $('pastActions').hidden = !pastItems.length; countPast();
+  }
+  function countPast() { const n = pastItems.filter(t => t.on).length; $('pastCount').textContent = `${n} of ${pastItems.length} selected`; $('pastAdd').textContent = n ? `Add ${n} purchase${n === 1 ? '' : 's'}` : 'Add'; $('pastAdd').disabled = !n; }
+  async function readScreens(files) {
+    files = [...files].slice(0, 8); if (!files.length) return;
+    $('pastStart').hidden = true; $('pastStatus').textContent = `Reading ${files.length} screenshot${files.length === 1 ? '' : 's'}…`;
+    const today = todayKey(), all = [];
+    let usedAI = true, aiError = null;
+    for (const f of files) {
+      let img; try { img = await shrink(f, 1600, .85); } catch (e) { continue; }
+      if (configured) {
+        try {
+          const prompt = `This is a screenshot of a bank, credit card or Apple Wallet transaction list. List every transaction you can see.
+Today is ${today} (${dayName(today)}). Turn words like "Today", "Yesterday" or weekday names into real dates before today; a weekday name means the most recent one. If a date has no year, use the most recent past date.
+Reply with JSON only: {"transactions":[{"date":"YYYY-MM-DD","merchant":"store name","amount":12.34,"refund":false}]}
+Rules: amount is always a positive number. Set refund true for refunds, credits, returns, deposits, payments to the card, or transfers in. Skip balances, totals and headers. Keep pending purchases. Use the store name as shown, without city or extra codes.`;
+          const r = await askAI(prompt, [img.split(',')[1]]);
+          (Array.isArray(r.transactions) ? r.transactions : []).forEach(t => all.push({ date: validDayLoose(t.date) || today, merchant: String(t.merchant || ''), amount: Math.round(Math.abs(Number(t.amount) || 0) * 100), refund: !!t.refund }));
+          continue;
+        } catch (e) { aiError = e; }
+      }
+      usedAI = false;
+      try { all.push(...await ocrTransactions(img)); } catch (e) {}
+    }
+    setPastItems(all, !usedAI && all.length ? `Read without the AI${aiError ? ' (' + aiErrText(aiError).replace(/\.$/, '') + ')' : ''}. Double-check the amounts and dates.` : null);
+  }
+  const validDayLoose = d => (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d) && d <= todayKey() && d >= shiftKey(todayKey(), -400)) ? d : null;
+  async function ocrTransactions(img) {
+    const Tess = await loadTess(); const { data } = await Tess.recognize(img, 'eng');
+    const lines = (data.text || '').split('\n').map(l => l.trim()).filter(Boolean), today = todayKey(), out = [];
+    const DOW = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    let curDate = today;
+    const dateFrom = l => { const t = l.toLowerCase(); if (/\btoday\b/.test(t)) return today; if (/\byesterday\b/.test(t)) return shiftKey(today, -1);
+      const w = DOW.findIndex(d => t.includes(d)); if (w >= 0) { for (let i = 1; i <= 7; i++) { const k = shiftKey(today, -i); const [y, m, dd] = k.split('-').map(Number); if (new Date(y, m - 1, dd).getDay() === w) return k; } }
+      const m = t.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})\b/); if (m) { const mo = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].indexOf(m[1]); let y = Number(today.slice(0, 4)); let k = `${y}-${pad(mo + 1)}-${pad(+m[2])}`; if (k > today) k = `${y - 1}-${pad(mo + 1)}-${pad(+m[2])}`; return k; }
+      const n = t.match(/\b(\d{1,2})\/(\d{1,2})\/(\d{2,4})\b/); if (n) { let y = +n[3]; if (y < 100) y += 2000; return `${y}-${pad(+n[1])}-${pad(+n[2])}`; } return null; };
+    lines.forEach((l, i) => {
+      const d = dateFrom(l); if (d) curDate = d;
+      const m = l.match(/(-|\+)?\s?(?:CA)?\$\s?(\d{1,5}(?:,\d{3})*[.,]\d{2})/); if (!m) return;
+      if (/balance|total|available|limit|credit limit/i.test(l)) return;
+      let name = l.slice(0, m.index).replace(/[^\w&'’ .-]/g, ' ').trim();
+      if (name.length < 2 && i > 0) name = lines[i - 1].replace(/[^\w&'’ .-]/g, ' ').trim();
+      out.push({ date: curDate, merchant: name.slice(0, 60), amount: parseMoney(m[2]), refund: m[1] === '+' });
+    });
+    return out;
+  }
+  // bank CSV files
+  function parseCSV(text) {
+    const rows = []; let row = [], cell = '', q = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
+      else if (c === '"') q = true; else if (c === ',') { row.push(cell); cell = ''; } else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; } else cell += c;
+    }
+    if (cell || row.length) { row.push(cell); rows.push(row); }
+    return rows.map(r => r.map(x => x.trim())).filter(r => r.some(Boolean));
+  }
+  function csvDate(v) {
+    v = String(v || '').trim(); let m;
+    if ((m = v.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/))) return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
+    if ((m = v.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/))) { let a = +m[1], b = +m[2], y = +m[3]; if (y < 100) y += 2000; let mo = a, d = b; if (a > 12) { mo = b; d = a; } if (mo < 1 || mo > 12 || d < 1 || d > 31) return null; return `${y}-${pad(mo)}-${pad(d)}`; }
+    if ((m = v.match(/^(\d{1,2})\s+([A-Za-z]{3})[a-z]*\.?\s+(\d{4})/)) || (m = v.match(/^([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2}),?\s+(\d{4})/))) {
+      const MON = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+      const isDayFirst = /^\d/.test(m[1]); const mon = MON.indexOf((isDayFirst ? m[2] : m[1]).toLowerCase()); const d = +(isDayFirst ? m[1] : m[2]);
+      if (mon >= 0) return `${m[3]}-${pad(mon + 1)}-${pad(d)}`;
+    }
+    return null;
+  }
+  const csvNum = v => { v = String(v || '').replace(/[$\s]|CA|USD|CAD/gi, ''); if (!v) return null; let neg = /^\(.*\)$/.test(v) || v.startsWith('-'); v = v.replace(/[()\-+]/g, '').replace(/,(?=\d{3}\b)/g, '').replace(',', '.'); const n = Number(v); return Number.isFinite(n) && v !== '' ? (neg ? -n : n) : null; };
+  function mapCSV(rows) {
+    if (!rows.length) return [];
+    const head = rows[0].map(h => h.toLowerCase()); const hasHead = !csvDate(rows[0].find(Boolean) || '') && head.some(h => /date|description|amount|debit|withdraw|merchant|payee|details/.test(h));
+    const body = hasHead ? rows.slice(1) : rows, ncol = Math.max(...rows.map(r => r.length));
+    const col = re => hasHead ? head.findIndex(h => re.test(h)) : -1;
+    let dC = col(/transaction date|date/), descC = col(/merchant|description 1|description|payee|details|name|memo/), desc2C = col(/description 2/), amtC = col(/^amount|cad\$|amount \(|^cad/), debC = col(/debit|withdraw|money out|paid out/), credC = col(/credit|deposit|money in|paid in/);
+    if (dC < 0) { for (let c = 0; c < ncol; c++) if (body.slice(0, 10).filter(r => csvDate(r[c])).length >= Math.min(3, body.length)) { dC = c; break; } }
+    if (descC < 0) { let best = -1, bl = 0; for (let c = 0; c < ncol; c++) { if (c === dC) continue; const avg = body.slice(0, 20).reduce((a, r) => a + ((r[c] || '').match(/[a-z]/gi) || []).length, 0); if (avg > bl) { bl = avg; best = c; } } descC = best; }
+    if (amtC < 0 && debC < 0) {
+      const nums = []; for (let c = 0; c < ncol; c++) { if (c === dC || c === descC) continue; const k = body.slice(0, 20).filter(r => csvNum(r[c]) !== null).length; if (k) nums.push([c, k]); }
+      if (!hasHead && nums.length >= 2) { debC = nums[0][0]; credC = nums[1][0]; } else if (nums.length) amtC = nums[0][0];
+    }
+    const out = [];
+    let negs = 0, poss = 0;
+    if (amtC >= 0) body.forEach(r => { const n = csvNum(r[amtC]); if (n < 0) negs++; else if (n > 0) poss++; });
+    const purchasesPositive = amtC >= 0 ? poss >= negs : true;
+    pastRaw = { body, dC, descC, desc2C, amtC, debC, credC, purchasesPositive };
+    return csvToItems();
+  }
+  function csvToItems() {
+    const { body, dC, descC, desc2C, amtC, debC, credC, purchasesPositive } = pastRaw, out = [];
+    body.forEach(r => {
+      const date = csvDate(r[dC]); if (!date) return;
+      let merchant = [r[descC], desc2C >= 0 ? r[desc2C] : ''].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
+      let amt = null, refund = false;
+      if (amtC >= 0) { const n = csvNum(r[amtC]); if (n === null || n === 0) return; const spend = purchasesPositive ? n > 0 : n < 0; amt = Math.abs(n); refund = !spend; }
+      else { const d = csvNum(r[debC]), c = credC >= 0 ? csvNum(r[credC]) : null; if (d) { amt = Math.abs(d); } else if (c) { amt = Math.abs(c); refund = true; } else return; }
+      if (/payment|transfer|e-transfer|interac|thank you/i.test(merchant) && amtC >= 0 && refund) refund = true;
+      out.push({ date, merchant: merchant.slice(0, 80), amount: Math.round(amt * 100), refund });
+    });
+    return out;
+  }
+  $('importPast').onclick = openPast;
+  $('pastClose').onclick = () => $('pastSheet').close();
+  $('pastImgs').addEventListener('change', e => { const f = e.target.files; readScreens(f).catch(() => { $('pastStatus').textContent = 'Couldn’t read those screenshots. Try again.'; }); e.target.value = ''; });
+  $('pastCsv').addEventListener('change', async e => {
+    const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
+    try {
+      const text = await f.text(); const items = mapCSV(parseCSV(text));
+      if (pastRaw && pastRaw.amtC >= 0) { $('pastSignWrap').hidden = false; $('pastSign').checked = pastRaw.purchasesPositive; }
+      setPastItems(items.filter(t => t.date <= todayKey()), items.length ? null : undefined);
+    } catch (er) { $('pastStatus').textContent = 'Couldn’t read that file. Make sure it’s a CSV file from your bank.'; }
+  });
+  $('pastSign').addEventListener('change', e => { if (!pastRaw) return; pastRaw.purchasesPositive = e.target.checked; setPastItems(csvToItems().filter(t => t.date <= todayKey())); $('pastSignWrap').hidden = false; });
+  $('pastAll').onclick = () => { const all = pastItems.every(t => t.on); pastItems.forEach(t => { t.on = !all; }); renderPast(); };
+  $('pastAgain').onclick = openPast;
+  $('pastAdd').onclick = () => {
+    const pick = pastItems.filter(t => t.on); if (!pick.length) return;
+    const snap = clone(S);
+    pick.forEach(t => S.expenses.push({ id: 'im_' + uid(), amount: t.amount, merchant: t.merchant, date: t.date, cat: t.cat, note: t.refund ? 'Refund (imported)' : 'Imported', items: [], src: 'import' }));
+    $('pastSheet').close(); save(); renderMoneyAll();
+    toast(`Added ${pick.length} purchase${pick.length === 1 ? '' : 's'}`, null, { label: 'Undo', fn: () => { S = ensureShape(snap); S.updatedAt = Date.now(); save(); renderAll(); } });
+  };
+
   // ---------- Apple Pay tracking (via an iPhone Shortcut automation) ----------
   function payUrl() { return `https://firestore.googleapis.com/v1/projects/${FIREBASE_CONFIG.projectId}/databases/(default)/documents/users/${authUser.uid}/pay?key=${FIREBASE_CONFIG.apiKey}`; }
   function payBody() { return `{"fields":{"t":{"stringValue":"${S.settings.paySecret}|AMOUNT|MERCHANT|CARD|DATE"}}}`; }
@@ -5536,6 +5719,30 @@ If the user only asks a question, use "actions": [].`;
     try { await fb.setDoc(fb.doc(fb.db, 'users', authUser.uid, 'private', 'pay'), { secret: S.settings.paySecret }); renderPaySheet(); }
     catch (e) { toast('Couldn’t turn it on. Update your Firestore rules first (step 1).'); }
   }
+  let payKeyOk = null;
+  async function ensurePayKey() {
+    if (!fb || !authUser || !S.settings.paySecret) return null;
+    try { await fb.setDoc(fb.doc(fb.db, 'users', authUser.uid, 'private', 'pay'), { secret: S.settings.paySecret }); payKeyOk = true; }
+    catch (e) { payKeyOk = false; }
+    return payKeyOk;
+  }
+  async function testPay(btn, out) {
+    btn.disabled = true; btn.textContent = 'Testing…'; out.textContent = '';
+    await ensurePayKey();
+    const body = JSON.stringify({ fields: { t: { stringValue: `${S.settings.paySecret}|$1.00|Burrow test|Test|${todayKey()}` } } });
+    try {
+      const r = await fetch(payUrl(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+      if (r.ok) { out.textContent = '✓ The connection works. Burrow just received a test purchase. If real purchases still don’t show up, the problem is in the Shortcut. Check the list below.'; out.className = 'pay-result ok'; }
+      else {
+        let msg = ''; try { msg = (await r.json()).error.message || ''; } catch (e) {}
+        out.className = 'pay-result bad';
+        out.textContent = r.status === 403 ? '✗ Firebase blocked it. Re-publish the firestore.rules file from the zip (Firebase → Firestore → Rules → paste → Publish), then tap Test again.'
+          : r.status === 400 ? `✗ Firebase couldn’t read the request: ${msg.slice(0, 140)}`
+          : `✗ It didn’t work (error ${r.status}). ${msg.slice(0, 140)}`;
+      }
+    } catch (e) { out.className = 'pay-result bad'; out.textContent = '✗ Couldn’t reach Firebase. Check your internet and try again.'; }
+    btn.disabled = false; btn.textContent = 'Test connection';
+  }
   function renderPaySheet() {
     const box = $('payBody'); box.innerHTML = '';
     const p = t => { const el = document.createElement('p'); el.className = 'muted'; el.style.margin = '0'; el.textContent = t; return el; };
@@ -5545,6 +5752,15 @@ If the user only asks a question, use "actions": [].`;
       const b = document.createElement('button'); b.className = 'btn-accent'; b.textContent = 'Turn on Apple Pay tracking'; b.onclick = enablePay;
       box.append(p('First, update your Firestore rules with the new firestore.rules file (see the update steps). Then tap the button.'), b); return;
     }
+    ensurePayKey();
+    const lp = S.settings.payLast;
+    const status = document.createElement('div'); status.className = 'pay-status';
+    status.innerHTML = '<b>Last purchase received</b><span></span>';
+    status.querySelector('span').textContent = !lp ? 'Nothing yet' : lp.ok ? `${new Date(lp.at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })} · ${lp.what}` : `${new Date(lp.at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })} · couldn’t read it: “${lp.what}”`;
+    const tb = document.createElement('button'); tb.className = 'btn-accent'; tb.textContent = 'Test connection';
+    const res = document.createElement('p'); res.className = 'pay-result';
+    tb.onclick = () => testPay(tb, res);
+    box.append(status, tb, res);
     const mk = (title, text, label) => { const d = document.createElement('div'); d.className = 'pay-code'; const h = document.createElement('h3'); h.textContent = title; const c = document.createElement('code'); c.textContent = text; d.append(h, c, copyBtn(text, label)); return d; };
     box.append(mk('1. Web address', payUrl(), 'Copy address'), mk('2. Text to send', payBody(), 'Copy text'));
     const ol = document.createElement('ol'); ol.className = 'pay-steps';
@@ -5552,7 +5768,17 @@ If the user only asks a question, use "actions": [].`;
      'Add a Text action and paste the text from box 2.', 'In that text, replace AMOUNT with Shortcut Input → Amount, MERCHANT with Shortcut Input → Merchant, CARD with Shortcut Input → Name, and DATE with Current Date (tap it, set Date Format to Custom, type yyyy-MM-dd).',
      'Add Get Contents of URL and paste the address from box 1.', 'Tap the arrow to show more. Set Method to POST, add a header named Content-Type with the value application/json, set Request Body to File, and pick the Text from step 3.', 'Tap Done. Your next Apple Pay purchase will appear here.']
       .forEach(t => { const li = document.createElement('li'); li.textContent = t; ol.appendChild(li); });
-    box.append(ol);
+    const chk = document.createElement('div'); chk.className = 'pay-check';
+    chk.innerHTML = '<h3>If purchases don’t show up</h3>';
+    const ul = document.createElement('ul');
+    ['The automation must say Run Immediately (not Run After Confirmation). Open Shortcuts → Automation and check.',
+     'It only runs when you tap your phone or watch on a card reader in a store. Apple Pay inside apps and websites doesn’t trigger it.',
+     'In the Text action, the start must be exactly {"fields":{"t":{"stringValue":" and the end exactly "}}}. Each blue bubble sits between | lines, with nothing else changed.',
+     'In Get Contents of URL: Method is POST, the header is Content-Type = application/json, and Request Body is File with the Text picked.',
+     'Open Burrow while signed in. Purchases are added the next time Burrow is open.']
+      .forEach(t => { const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+    chk.appendChild(ul);
+    box.append(ol, chk);
     const off = document.createElement('button'); off.className = 'link-btn danger'; off.style.justifySelf = 'start'; off.textContent = 'Turn off and make a new key';
     off.onclick = async () => { try { await fb.deleteDoc(fb.doc(fb.db, 'users', authUser.uid, 'private', 'pay')); } catch (e) {} S.settings.paySecret = null; save(); renderPaySheet(); toast('Apple Pay tracking is off. Old Shortcuts won’t work anymore.'); };
     box.append(off);
@@ -5563,9 +5789,12 @@ If the user only asks a question, use "actions": [].`;
     if (!fb || !authUser || !fb.collection) return;
     payUnsub = fb.onSnapshot(fb.collection(fb.db, 'users', authUser.uid, 'pay'), snap => {
       let added = 0, last = null;
+      let test = false, bad = null;
       snap.docs.forEach(d => {
         const t = String((d.data() || {}).t || ''), parts = t.split('|');
         const id = 'ap_' + d.id;
+        if ((parts[2] || '').trim() === 'Burrow test') { test = true; fb.deleteDoc(d.ref).catch(() => {}); return; }
+        if (!(parseMoney(parts[1]) > 0)) bad = parts.slice(1).join('|').slice(0, 80) || '(empty)';
         if (!S.expenses.some(e => e.id === id) && !S.tomb[id]) {
           const amount = parseMoney(parts[1]); const merchant = (parts[2] || '').trim().slice(0, 80); const card = (parts[3] || '').trim().slice(0, 40);
           const date = /^\d{4}-\d{2}-\d{2}$/.test((parts[4] || '').trim()) ? parts[4].trim() : todayKey();
@@ -5577,8 +5806,12 @@ If the user only asks a question, use "actions": [].`;
         }
         fb.deleteDoc(d.ref).catch(() => {});
       });
+      if (test) { S.settings.payLast = { at: Date.now(), ok: true, what: 'Test from Burrow' }; save(); toast('Apple Pay test received ✓'); if ($('paySheet').open) renderPaySheet(); }
+      if (bad) { S.settings.payLast = { at: Date.now(), ok: false, what: bad }; save(); toast('Got an Apple Pay purchase but couldn’t read the amount. See Apple Pay tracking.'); }
+      if (added) { S.settings.payLast = { at: Date.now(), ok: true, what: `${money(last.amount)}${last.merchant ? ' at ' + last.merchant : ''}` }; }
       if (added) { save(); if (tab === 'money') renderMoney(); toast(added === 1 ? `Added ${money(last.amount)}${last.merchant ? ' at ' + last.merchant : ''} from Apple Pay` : `Added ${added} Apple Pay purchases`); }
     }, () => {});
+    ensurePayKey();
   }
 
   // ---------- boot ----------
